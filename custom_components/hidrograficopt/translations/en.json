@@ -31,9 +31,13 @@
       "init": {
         "title": "Integration Options",
         "data": {
-          "update_interval_minutes": "Update interval (minutes)"
+          "update_interval_minutes": "Update interval (minutes)",
+          "timezone_override": "Timezone override (IANA, optional)"
         }
       }
+    },
+    "error": {
+      "invalid_timezone": "Invalid timezone. Use a valid IANA name (for example: Atlantic/Madeira)."
     }
   },
   "entity": {

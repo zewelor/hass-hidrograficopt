@@ -496,6 +496,11 @@ See `.github/instructions/tests.instructions.md` for comprehensive testing patte
 - Suggest version bump (major version change)
 - Update documentation if it exists
 
+**Version bump policy:**
+
+- After significant functional changes (new features, behavior changes, API/coordinator/entity logic changes), always bump integration version in `custom_components/hidrograficopt/manifest.json`.
+- Use semantic versioning: patch for fixes, minor for backward-compatible features, major for breaking changes.
+
 ## File Changes
 
 **Scope Management:**
@@ -544,6 +549,7 @@ See `.github/copilot-instructions.md` for detailed workflow guidance.
 - Use official docs and working examples over guesswork
 - When in doubt, search for recent integration examples in Home Assistant Core
 - For this integration's external API contract details and known quirks, consult `docs/development/HMAPI.md` before changing API/coordinator/config flow logic.
+- Before adding or bumping third-party dependencies, verify the latest available stable version from the official source (for example PyPI) and document any intentional version pin below latest.
 
 **Tool documentation:**
 

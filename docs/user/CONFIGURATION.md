@@ -11,6 +11,10 @@
 - `update_interval_minutes`
   - Default: `60`
   - Range: `5` to `360`
+- `timezone_override` (optional)
+  - IANA timezone string, for example: `Atlantic/Madeira`
+  - If empty, integration uses station timezone auto-detected from station coordinates
+  - Use this only if you need to force a specific timezone
 
 ## Service
 

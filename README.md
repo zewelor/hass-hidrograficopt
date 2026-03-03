@@ -38,6 +38,8 @@ Custom Home Assistant integration for Portuguese tide data from Instituto Hidrog
 ## Options
 
 - Update interval in minutes (default: 60)
+- Optional timezone override (IANA format, e.g. `Atlantic/Madeira`)
+- By default, timezone is auto-detected from station coordinates
 
 ## Service
 

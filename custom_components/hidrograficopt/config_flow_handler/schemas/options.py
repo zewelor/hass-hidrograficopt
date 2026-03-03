@@ -7,7 +7,11 @@ from typing import Any
 
 import voluptuous as vol
 
-from custom_components.hidrograficopt.const import CONF_UPDATE_INTERVAL_MINUTES, DEFAULT_UPDATE_INTERVAL_MINUTES
+from custom_components.hidrograficopt.const import (
+    CONF_TIMEZONE_OVERRIDE,
+    CONF_UPDATE_INTERVAL_MINUTES,
+    DEFAULT_UPDATE_INTERVAL_MINUTES,
+)
 from homeassistant.helpers import selector
 
 
@@ -31,5 +35,12 @@ def get_options_schema(defaults: Mapping[str, Any] | None = None) -> vol.Schema:
                     mode=selector.NumberSelectorMode.BOX,
                 )
             ),
+            vol.Optional(
+                CONF_TIMEZONE_OVERRIDE,
+                default=defaults.get(
+                    CONF_TIMEZONE_OVERRIDE,
+                    "",
+                ),
+            ): selector.TextSelector(),
         }
     )

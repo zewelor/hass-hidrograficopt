@@ -11,8 +11,15 @@ from custom_components.hidrograficopt.api import (
     TideDirection,
     TideEvent,
     TideType,
+    normalize_timezone_name,
 )
-from custom_components.hidrograficopt.const import CONF_PORT_ID, CONF_STATION_NAME, DEFAULT_PERIOD_DAYS
+from custom_components.hidrograficopt.const import (
+    CONF_PORT_ID,
+    CONF_STATION_NAME,
+    CONF_STATION_TIMEZONE,
+    CONF_TIMEZONE_OVERRIDE,
+    DEFAULT_PERIOD_DAYS,
+)
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
@@ -30,7 +37,8 @@ class InstitutoHidrogrficoDataUpdateCoordinator(DataUpdateCoordinator[dict[str, 
         try:
             port_id = int(self.config_entry.data[CONF_PORT_ID])
             station_name = str(self.config_entry.data.get(CONF_STATION_NAME, f"Port {port_id}"))
-            timezone = dt_util.get_time_zone(self.hass.config.time_zone) or dt_util.UTC
+            timezone_name, timezone_source = self._resolve_effective_timezone()
+            timezone = dt_util.get_time_zone(timezone_name) or dt_util.UTC
             now = dt_util.now()
 
             events = await self.config_entry.runtime_data.client.async_get_tide_events(
@@ -52,12 +60,30 @@ class InstitutoHidrogrficoDataUpdateCoordinator(DataUpdateCoordinator[dict[str, 
                 "next_low": next_low,
                 "tide_status": tide_status,
                 "last_update": now,
+                "effective_timezone": timezone_name,
+                "timezone_source": timezone_source,
             }
         except (InstitutoHidrogrficoApiClientCommunicationError, InstitutoHidrogrficoApiClientDataError) as exception:
             raise UpdateFailed(str(exception)) from exception
         except InstitutoHidrogrficoApiClientError as exception:
             raise UpdateFailed(str(exception)) from exception
         return data
+
+    def _resolve_effective_timezone(self) -> tuple[str, str]:
+        """Resolve timezone in precedence order and return (name, source)."""
+        option_timezone = normalize_timezone_name(self.config_entry.options.get(CONF_TIMEZONE_OVERRIDE))
+        if option_timezone:
+            return option_timezone, "override"
+
+        station_timezone = normalize_timezone_name(self.config_entry.data.get(CONF_STATION_TIMEZONE))
+        if station_timezone:
+            return station_timezone, "station"
+
+        hass_timezone = normalize_timezone_name(self.hass.config.time_zone)
+        if hass_timezone:
+            return hass_timezone, "ha_fallback"
+
+        return "UTC", "ha_fallback"
 
 
 def _find_next_tide(events: list[TideEvent], tide_type: TideType) -> TideEvent | None:
