@@ -6,6 +6,12 @@ on:
       - "main"
     paths:
       - "custom_components/hidrograficopt/manifest.json"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Optional version override (without v prefix)"
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -24,7 +30,10 @@ jobs:
         id: version
         run: |
           FILE="custom_components/hidrograficopt/manifest.json"
-          CURRENT_VERSION="$(jq -r '.version' "${FILE}")"
+          CURRENT_VERSION="${{ github.event.inputs.version }}"
+          if [[ -z "${CURRENT_VERSION}" ]]; then
+            CURRENT_VERSION="$(jq -r '.version' "${FILE}")"
+          fi
 
           if [[ -z "${CURRENT_VERSION}" || "${CURRENT_VERSION}" == "null" ]]; then
             echo "Manifest version is missing"
@@ -34,7 +43,7 @@ jobs:
           PREVIOUS_VERSION="$(git show HEAD^:${FILE} 2>/dev/null | jq -r '.version' 2>/dev/null || true)"
           TAG="v${CURRENT_VERSION}"
 
-          if [[ "${CURRENT_VERSION}" == "${PREVIOUS_VERSION}" ]]; then
+          if [[ "${{ github.event_name }}" != "workflow_dispatch" && "${CURRENT_VERSION}" == "${PREVIOUS_VERSION}" ]]; then
             echo "changed=false" >> "${GITHUB_OUTPUT}"
             exit 0
           fi
