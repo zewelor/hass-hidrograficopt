@@ -19,7 +19,7 @@ If not provided, ask for:
 
 ### 1. Create Platform Directory Structure
 
-**Directory:** `custom_components/ha_integration_domain/[platform]/`
+**Directory:** `custom_components/hidrograficopt/[platform]/`
 
 **Files to create:**
 
@@ -29,7 +29,7 @@ If not provided, ask for:
 ### 2. Platform `__init__.py` Template
 
 ```python
-"""[Platform] platform for Integration Blueprint."""
+"""[Platform] platform for Instituto Hidrográfico Integration."""
 
 from __future__ import annotations
 
@@ -38,10 +38,10 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .entity import IntegrationBlueprintEntity
-from .[entity_file] import IntegrationBlueprint[EntityName]
+from .entity import InstitutoHidrogrficoEntity
+from .[entity_file] import InstitutoHidrogrfico[EntityName]
 from .const import DOMAIN
-from .coordinator import IntegrationBlueprintDataUpdateCoordinator
+from .coordinator import InstitutoHidrogrficoDataUpdateCoordinator
 
 
 async def async_setup_entry(
@@ -50,13 +50,13 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up [platform] platform."""
-    coordinator: IntegrationBlueprintDataUpdateCoordinator = hass.data[DOMAIN][
+    coordinator: InstitutoHidrogrficoDataUpdateCoordinator = hass.data[DOMAIN][
         entry.entry_id
     ]
 
     async_add_entities(
         [
-            IntegrationBlueprint[EntityName](coordinator, entry),
+            InstitutoHidrogrfico[EntityName](coordinator, entry),
             # Add more entities here
         ]
     )
@@ -65,7 +65,7 @@ async def async_setup_entry(
 ### 3. Entity Implementation Template
 
 ```python
-"""[Entity description] for Integration Blueprint."""
+"""[Entity description] for Instituto Hidrográfico Integration."""
 
 from __future__ import annotations
 
@@ -78,12 +78,12 @@ from homeassistant.components.[platform] import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback
 
-from .coordinator import IntegrationBlueprintDataUpdateCoordinator
-from .entity import IntegrationBlueprintEntity
+from .coordinator import InstitutoHidrogrficoDataUpdateCoordinator
+from .entity import InstitutoHidrogrficoEntity
 
 
-class IntegrationBlueprint[EntityName](
-    IntegrationBlueprintEntity,
+class InstitutoHidrogrfico[EntityName](
+    InstitutoHidrogrficoEntity,
     [PlatformEntityClass],
 ):
     """Representation of [entity description]."""
@@ -100,7 +100,7 @@ class IntegrationBlueprint[EntityName](
 
     def __init__(
         self,
-        coordinator: IntegrationBlueprintDataUpdateCoordinator,
+        coordinator: InstitutoHidrogrficoDataUpdateCoordinator,
         entry: ConfigEntry,
     ) -> None:
         """Initialize the [entity]."""
@@ -129,7 +129,7 @@ class IntegrationBlueprint[EntityName](
 
 ### 4. Update Manifest
 
-Add platform to `custom_components/ha_integration_domain/manifest.json`:
+Add platform to `custom_components/hidrograficopt/manifest.json`:
 
 ```json
 {
@@ -236,15 +236,15 @@ script/develop         # Start Home Assistant for testing
 ```python
 from homeassistant.helpers.device_registry import DeviceInfo
 
-class IntegrationBlueprint[EntityName](
-    IntegrationBlueprintEntity,
+class InstitutoHidrogrfico[EntityName](
+    InstitutoHidrogrficoEntity,
     [PlatformEntityClass],
 ):
     """Entity with device grouping."""
 
     def __init__(
         self,
-        coordinator: IntegrationBlueprintDataUpdateCoordinator,
+        coordinator: InstitutoHidrogrficoDataUpdateCoordinator,
         entry: ConfigEntry,
     ) -> None:
         """Initialize entity."""
@@ -291,7 +291,7 @@ async def async_press(self) -> None:
 ## Validation Checklist
 
 - [ ] Platform directory created with `__init__.py`
-- [ ] Entity class inherits from both `IntegrationBlueprintEntity` and platform class
+- [ ] Entity class inherits from both `InstitutoHidrogrficoEntity` and platform class
 - [ ] `_attr_has_entity_name = True` set (MANDATORY for new integrations)
 - [ ] Entity uses `translation_key` instead of hardcoded `name`
 - [ ] Unique ID set correctly
@@ -307,10 +307,10 @@ async def async_press(self) -> None:
 
 ## Integration Context
 
-- **Domain:** `ha_integration_domain`
-- **Class prefix:** `IntegrationBlueprint`
-- **Base entity:** `IntegrationBlueprintEntity` in `entity/base.py`
-- **Coordinator:** `IntegrationBlueprintDataUpdateCoordinator`
+- **Domain:** `hidrograficopt`
+- **Class prefix:** `InstitutoHidrogrfico`
+- **Base entity:** `InstitutoHidrogrficoEntity` in `entity/base.py`
+- **Coordinator:** `InstitutoHidrogrficoDataUpdateCoordinator`
 
 Follow patterns from existing platforms in the integration for consistency.
 
