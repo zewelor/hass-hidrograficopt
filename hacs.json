@@ -1,5 +1,6 @@
 {
   "name": "Instituto Hidrográfico Integration",
   "homeassistant": "2025.12.3",
-  "hacs": "2.0.5"
+  "hacs": "2.0.5",
+  "hide_default_branch": true
 }
