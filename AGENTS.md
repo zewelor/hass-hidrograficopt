@@ -500,6 +500,7 @@ See `.github/instructions/tests.instructions.md` for comprehensive testing patte
 
 - After significant functional changes (new features, behavior changes, API/coordinator/entity logic changes), always bump integration version in `custom_components/hidrograficopt/manifest.json`.
 - Use semantic versioning: patch for fixes, minor for backward-compatible features, major for breaking changes.
+- For HACS semver visibility, create and push a matching Git tag and GitHub release (for example `v0.2.0`) after bumping `manifest.json`; otherwise HACS may show commit hashes instead of version numbers.
 
 ## File Changes
 

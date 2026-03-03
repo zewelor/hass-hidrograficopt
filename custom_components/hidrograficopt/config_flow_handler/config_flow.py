@@ -9,7 +9,6 @@ from custom_components.hidrograficopt.api import (
     InstitutoHidrogrficoApiClientCommunicationError,
     InstitutoHidrogrficoApiClientDataError,
     normalize_timezone_name,
-    resolve_timezone_from_coordinates,
 )
 from custom_components.hidrograficopt.config_flow_handler.schemas import get_user_schema
 from custom_components.hidrograficopt.config_flow_handler.validators import validate_port_id
@@ -67,7 +66,7 @@ class InstitutoHidrogrficoConfigFlowHandler(config_entries.ConfigFlow, domain=DO
             else:
                 station = self._resolve_station(port_id)
                 station_name = station.name if station else f"Port {port_id}"
-                station_timezone = self._resolve_station_timezone(station)
+                station_timezone = self._resolve_default_timezone()
                 await self.async_set_unique_id(str(port_id))
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
@@ -119,7 +118,7 @@ class InstitutoHidrogrficoConfigFlowHandler(config_entries.ConfigFlow, domain=DO
                 if not errors:
                     station = self._resolve_station(port_id)
                     station_name = station.name if station else f"Port {port_id}"
-                    station_timezone = self._resolve_station_timezone(station)
+                    station_timezone = self._resolve_default_timezone()
                     self.hass.config_entries.async_update_entry(
                         entry,
                         title=station_name,
@@ -170,12 +169,7 @@ class InstitutoHidrogrficoConfigFlowHandler(config_entries.ConfigFlow, domain=DO
                 return station
         return None
 
-    def _resolve_station_timezone(self, station: TideStation | None) -> str:
-        """Resolve station timezone with fallback."""
-        if station:
-            station_timezone = resolve_timezone_from_coordinates(station.latitude, station.longitude)
-            if station_timezone:
-                return station_timezone
-
+    def _resolve_default_timezone(self) -> str:
+        """Resolve default timezone for new entries."""
         hass_timezone = normalize_timezone_name(self.hass.config.time_zone)
         return hass_timezone or "UTC"
