@@ -110,6 +110,29 @@ Each decision is documented with:
 
 ---
 
+### Maintain HMAPI Contract Notes In A Dedicated Document
+
+**Date:** 2026-03-03
+
+**Context:** The Instituto Hidrografico HMAPI used by this integration does not currently expose public OpenAPI/Swagger documentation. We still need a reliable internal contract for implementation and maintenance.
+
+**Decision:** Keep verified HMAPI behavior in `docs/development/HMAPI.md` and treat that file as the integration's internal API contract notes.
+
+**Rationale:**
+
+- Makes assumptions explicit and reviewable
+- Reduces guesswork during API/client and coordinator changes
+- Creates a single place to track endpoint quirks and validation commands
+- Speeds onboarding for new contributors and AI agents
+
+**Consequences:**
+
+- HMAPI notes must be updated when behavior is re-validated
+- API-related PRs should reference or update `HMAPI.md` when contract assumptions change
+- Internal contract may differ from future official docs and must be reconciled if official docs are published
+
+---
+
 ## Future Considerations
 
 ### State Restoration

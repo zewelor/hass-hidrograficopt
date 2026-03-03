@@ -1,14 +1,4 @@
-"""
-Options flow schemas.
-
-Schemas for the options flow that allows users to modify settings
-after initial configuration.
-
-When adding many options, consider grouping them:
-- basic_options.py: Common settings (update interval, debug mode)
-- advanced_options.py: Advanced settings
-- device_options.py: Device-specific settings
-"""
+"""Schema for options flow."""
 
 from __future__ import annotations
 
@@ -17,48 +7,29 @@ from typing import Any
 
 import voluptuous as vol
 
-from custom_components.hidrograficopt.const import DEFAULT_ENABLE_DEBUGGING, DEFAULT_UPDATE_INTERVAL_HOURS
+from custom_components.hidrograficopt.const import CONF_UPDATE_INTERVAL_MINUTES, DEFAULT_UPDATE_INTERVAL_MINUTES
 from homeassistant.helpers import selector
 
 
 def get_options_schema(defaults: Mapping[str, Any] | None = None) -> vol.Schema:
-    """
-    Get schema for options flow.
-
-    Args:
-        defaults: Optional dictionary of current option values.
-
-    Returns:
-        Voluptuous schema for options configuration.
-
-    """
+    """Return options flow schema."""
     defaults = defaults or {}
     return vol.Schema(
         {
             vol.Optional(
-                "update_interval_hours",
-                default=defaults.get("update_interval_hours", DEFAULT_UPDATE_INTERVAL_HOURS),
+                CONF_UPDATE_INTERVAL_MINUTES,
+                default=defaults.get(
+                    CONF_UPDATE_INTERVAL_MINUTES,
+                    DEFAULT_UPDATE_INTERVAL_MINUTES,
+                ),
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
-                    min=0.25,
-                    max=24,
-                    step=0.25,
-                    unit_of_measurement="h",
+                    min=5,
+                    max=360,
+                    step=5,
+                    unit_of_measurement="min",
                     mode=selector.NumberSelectorMode.BOX,
-                ),
+                )
             ),
-            vol.Optional(
-                "enable_debugging",
-                default=defaults.get("enable_debugging", DEFAULT_ENABLE_DEBUGGING),
-            ): selector.BooleanSelector(),
-            vol.Optional(
-                "custom_icon",
-                default=defaults.get("custom_icon"),
-            ): selector.IconSelector(),
-        },
+        }
     )
-
-
-__all__ = [
-    "get_options_schema",
-]

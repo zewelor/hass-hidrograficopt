@@ -1,125 +1,82 @@
-"""
-Core DataUpdateCoordinator implementation for hidrograficopt.
-
-This module contains the main coordinator class that manages data fetching
-and updates for all entities in the integration. It handles refresh cycles,
-error handling, and triggers reauthentication when needed.
-
-For more information on coordinators:
-https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
-"""
+"""DataUpdateCoordinator for HMAPI tides."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
 from custom_components.hidrograficopt.api import (
-    InstitutoHidrogrficoApiClientAuthenticationError,
+    InstitutoHidrogrficoApiClientCommunicationError,
+    InstitutoHidrogrficoApiClientDataError,
     InstitutoHidrogrficoApiClientError,
+    TideDirection,
+    TideEvent,
+    TideType,
 )
-from custom_components.hidrograficopt.const import LOGGER
-from homeassistant.exceptions import ConfigEntryAuthFailed
+from custom_components.hidrograficopt.const import CONF_PORT_ID, CONF_STATION_NAME, DEFAULT_PERIOD_DAYS
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 if TYPE_CHECKING:
     from custom_components.hidrograficopt.data import InstitutoHidrogrficoConfigEntry
 
 
-class InstitutoHidrogrficoDataUpdateCoordinator(DataUpdateCoordinator):
-    """
-    Class to manage fetching data from the API.
-
-    This coordinator handles all data fetching for the integration and distributes
-    updates to all entities. It manages:
-    - Periodic data updates based on update_interval
-    - Error handling and recovery
-    - Authentication failure detection and reauthentication triggers
-    - Data distribution to all entities
-    - Context-based data fetching (only fetch data for active entities)
-
-    For more information:
-    https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
-
-    Attributes:
-        config_entry: The config entry for this integration instance.
-    """
+class InstitutoHidrogrficoDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
+    """Coordinator that fetches and derives tide data for one station."""
 
     config_entry: InstitutoHidrogrficoConfigEntry
 
-    async def _async_setup(self) -> None:
-        """
-        Set up the coordinator.
-
-        This method is called automatically during async_config_entry_first_refresh()
-        and is the ideal place for one-time initialization tasks such as:
-        - Loading device information
-        - Setting up event listeners
-        - Initializing caches
-
-        This runs before the first data fetch, ensuring any required setup
-        is complete before entities start requesting data.
-        """
-        # Example: Fetch device info once at startup
-        # device_info = await self.config_entry.runtime_data.client.get_device_info()
-        # self._device_id = device_info["id"]
-        LOGGER.debug("Coordinator setup complete for %s", self.config_entry.entry_id)
-
-    async def _async_update_data(self) -> Any:
-        """
-        Fetch data from API endpoint.
-
-        This is the only method that should be implemented in a DataUpdateCoordinator.
-        It is called automatically based on the update_interval.
-
-        Context-based fetching:
-        The coordinator tracks which entities are currently listening via async_contexts().
-        This allows optimizing API calls to only fetch data that's actually needed.
-        For example, if only sensor entities are enabled, we can skip fetching switch data.
-
-        The API client uses the credentials from config_entry to authenticate:
-        - username: from config_entry.data["username"]
-        - password: from config_entry.data["password"]
-
-        Expected API response structure (example):
-        {
-            "userId": 1,      # Used as device identifier
-            "id": 1,          # Data record ID
-            "title": "...",   # Additional metadata
-            "body": "...",    # Additional content
-            # In production, would include:
-            # "air_quality": {"aqi": 45, "pm25": 12.3},
-            # "filter": {"life_remaining": 75, "runtime_hours": 324},
-            # "settings": {"fan_speed": "medium", "humidity": 55}
-        }
-
-        Returns:
-            The data from the API as a dictionary.
-
-        Raises:
-            ConfigEntryAuthFailed: If authentication fails, triggers reauthentication.
-            UpdateFailed: If data fetching fails for other reasons, optionally with retry_after.
-        """
+    async def _async_update_data(self) -> dict[str, Any]:
+        """Fetch station data and compute derived fields."""
         try:
-            # Optional: Get active entity contexts to optimize data fetching
-            # listening_contexts = set(self.async_contexts())
-            # LOGGER.debug("Active entity contexts: %s", listening_contexts)
+            port_id = int(self.config_entry.data[CONF_PORT_ID])
+            station_name = str(self.config_entry.data.get(CONF_STATION_NAME, f"Port {port_id}"))
+            timezone = dt_util.get_time_zone(self.hass.config.time_zone) or dt_util.UTC
+            now = dt_util.now()
 
-            # Fetch data from API
-            # In production, you could pass listening_contexts to optimize the API call:
-            # return await self.config_entry.runtime_data.client.async_get_data(listening_contexts)
-            return await self.config_entry.runtime_data.client.async_get_data()
-        except InstitutoHidrogrficoApiClientAuthenticationError as exception:
-            LOGGER.warning("Authentication error - %s", exception)
-            raise ConfigEntryAuthFailed(
-                translation_domain="hidrograficopt",
-                translation_key="authentication_failed",
-            ) from exception
+            events = await self.config_entry.runtime_data.client.async_get_tide_events(
+                port_id=port_id,
+                timezone=timezone,
+                period_days=DEFAULT_PERIOD_DAYS,
+            )
+
+            upcoming_events = [event for event in events if event.time >= now]
+            next_high = _find_next_tide(upcoming_events, TideType.HIGH)
+            next_low = _find_next_tide(upcoming_events, TideType.LOW)
+            tide_status = _resolve_tide_direction(upcoming_events)
+            data = {
+                "port_id": port_id,
+                "station_name": station_name,
+                "events": events,
+                "upcoming_events": upcoming_events,
+                "next_high": next_high,
+                "next_low": next_low,
+                "tide_status": tide_status,
+                "last_update": now,
+            }
+        except (InstitutoHidrogrficoApiClientCommunicationError, InstitutoHidrogrficoApiClientDataError) as exception:
+            raise UpdateFailed(str(exception)) from exception
         except InstitutoHidrogrficoApiClientError as exception:
-            LOGGER.exception("Error communicating with API")
-            # If the API provides rate limit information, you can honor it:
-            # if hasattr(exception, 'retry_after'):
-            #     raise UpdateFailed(retry_after=exception.retry_after) from exception
-            raise UpdateFailed(
-                translation_domain="hidrograficopt",
-                translation_key="update_failed",
-            ) from exception
+            raise UpdateFailed(str(exception)) from exception
+        return data
+
+
+def _find_next_tide(events: list[TideEvent], tide_type: TideType) -> TideEvent | None:
+    """Return nearest upcoming tide for a given tide type."""
+    for event in events:
+        if event.tide_type == tide_type:
+            return event
+    return None
+
+
+def _resolve_tide_direction(events: list[TideEvent]) -> TideDirection:
+    """Resolve tide direction from nearest upcoming event."""
+    if not events:
+        return TideDirection.UNKNOWN
+
+    first_upcoming = events[0]
+    if first_upcoming.tide_type == TideType.HIGH:
+        return TideDirection.RISING
+    if first_upcoming.tide_type == TideType.LOW:
+        return TideDirection.FALLING
+
+    return TideDirection.UNKNOWN

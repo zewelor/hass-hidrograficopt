@@ -1,48 +1,28 @@
-"""
-Credential validators.
-
-Validation functions for user credentials and authentication.
-
-When this file grows, consider splitting into:
-- credentials.py: Basic credential validation
-- oauth.py: OAuth-specific validation
-- api_auth.py: API authentication methods
-"""
+"""Validation helpers for HMAPI config flow."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from custom_components.hidrograficopt.api import InstitutoHidrogrficoApiClient
+from custom_components.hidrograficopt.api import InstitutoHidrogrficoApiClient, InstitutoHidrogrficoApiClientDataError
+from custom_components.hidrograficopt.const import DEFAULT_PERIOD_DAYS
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
+from homeassistant.util import dt as dt_util
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
 
 
-async def validate_credentials(hass: HomeAssistant, username: str, password: str) -> None:
-    """
-    Validate user credentials by testing API connection.
-
-    Args:
-        hass: Home Assistant instance.
-        username: The username to validate.
-        password: The password to validate.
-
-    Raises:
-        InstitutoHidrogrficoApiClientAuthenticationError: If credentials are invalid.
-        InstitutoHidrogrficoApiClientCommunicationError: If communication fails.
-        InstitutoHidrogrficoApiClientError: For other API errors.
-
-    """
-    client = InstitutoHidrogrficoApiClient(
-        username=username,
-        password=password,
-        session=async_create_clientsession(hass),
+async def validate_port_id(hass: HomeAssistant, port_id: int) -> None:
+    """Validate whether station id returns tide data."""
+    client = InstitutoHidrogrficoApiClient(async_create_clientsession(hass))
+    timezone = dt_util.get_time_zone(hass.config.time_zone) or dt_util.UTC
+    events = await client.async_get_tide_events(
+        port_id=port_id,
+        timezone=timezone,
+        period_days=DEFAULT_PERIOD_DAYS,
     )
-    await client.async_get_data()  # May raise authentication/communication errors
 
-
-__all__ = [
-    "validate_credentials",
-]
+    if not events:
+        msg = f"No tide events returned for port_id={port_id}"
+        raise InstitutoHidrogrficoApiClientDataError(msg)

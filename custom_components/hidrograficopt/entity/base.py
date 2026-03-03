@@ -1,19 +1,10 @@
-"""
-Base entity class for hidrograficopt.
-
-This module provides the base entity class that all integration entities inherit from.
-It handles common functionality like device info, unique IDs, and coordinator integration.
-
-For more information on entities:
-https://developers.home-assistant.io/docs/core/entity
-https://developers.home-assistant.io/docs/core/entity/index/#common-properties
-"""
+"""Base entity for hidrograficopt sensors."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from custom_components.hidrograficopt.const import ATTRIBUTION
+from custom_components.hidrograficopt.const import ATTRIBUTION, HMAPI_WEBSITE_URL
 from custom_components.hidrograficopt.coordinator import InstitutoHidrogrficoDataUpdateCoordinator
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -23,19 +14,7 @@ if TYPE_CHECKING:
 
 
 class InstitutoHidrogrficoEntity(CoordinatorEntity[InstitutoHidrogrficoDataUpdateCoordinator]):
-    """
-    Base entity class for hidrograficopt.
-
-    All entities in this integration inherit from this class, which provides:
-    - Automatic coordinator updates
-    - Device info management
-    - Unique ID generation
-    - Attribution and naming conventions
-
-    For more information:
-    https://developers.home-assistant.io/docs/core/entity
-    https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
-    """
+    """Shared entity behavior for all hidrograficopt entities."""
 
     _attr_attribution = ATTRIBUTION
     _attr_has_entity_name = True
@@ -45,26 +24,16 @@ class InstitutoHidrogrficoEntity(CoordinatorEntity[InstitutoHidrogrficoDataUpdat
         coordinator: InstitutoHidrogrficoDataUpdateCoordinator,
         entity_description: EntityDescription,
     ) -> None:
-        """
-        Initialize the base entity.
-
-        Args:
-            coordinator: The data update coordinator for this entity.
-            entity_description: The entity description defining characteristics.
-
-        """
+        """Initialize base entity."""
         super().__init__(coordinator)
         self.entity_description = entity_description
-        # Include entity description key in unique_id to support multiple entities
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_{entity_description.key}"
+        station_name = str(coordinator.config_entry.data.get("station_name", coordinator.config_entry.title))
         self._attr_device_info = DeviceInfo(
-            identifiers={
-                (
-                    coordinator.config_entry.domain,
-                    coordinator.config_entry.entry_id,
-                ),
-            },
-            name=coordinator.config_entry.title,
-            manufacturer=coordinator.config_entry.domain,
-            model=coordinator.data.get("model", "Unknown"),
+            identifiers={(coordinator.config_entry.domain, coordinator.config_entry.entry_id)},
+            name=station_name,
+            manufacturer="Instituto Hidrografico",
+            model="HMAPI Tide Station",
+            serial_number=str(coordinator.config_entry.data.get("port_id", "unknown")),
+            configuration_url=HMAPI_WEBSITE_URL,
         )

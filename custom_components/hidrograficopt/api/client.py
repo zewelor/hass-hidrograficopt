@@ -1,12 +1,4 @@
-"""
-API Client for hidrograficopt.
-
-This module provides the API client for communicating with external services.
-It demonstrates proper error handling, authentication patterns, and async operations.
-
-For more information on creating API clients:
-https://developers.home-assistant.io/docs/api_lib_index
-"""
+"""HTTP client for Instituto Hidrografico HMAPI."""
 
 from __future__ import annotations
 
@@ -16,222 +8,81 @@ from typing import Any
 
 import aiohttp
 
+from custom_components.hidrograficopt.const import DEFAULT_PERIOD_DAYS, HMAPI_BASE_URL
+
+from .models import TideEvent, TideStation
+from .parsers import parse_stations, parse_tide_events
+
 
 class InstitutoHidrogrficoApiClientError(Exception):
-    """Base exception to indicate a general API error."""
+    """Base exception for HMAPI client errors."""
 
 
-class InstitutoHidrogrficoApiClientCommunicationError(
-    InstitutoHidrogrficoApiClientError,
-):
-    """Exception to indicate a communication error with the API."""
+class InstitutoHidrogrficoApiClientCommunicationError(InstitutoHidrogrficoApiClientError):
+    """Communication-level error with HMAPI."""
 
 
-class InstitutoHidrogrficoApiClientAuthenticationError(
-    InstitutoHidrogrficoApiClientError,
-):
-    """Exception to indicate an authentication error with the API."""
-
-
-def _verify_response_or_raise(response: aiohttp.ClientResponse) -> None:
-    """
-    Verify that the API response is valid.
-
-    Raises appropriate exceptions for authentication and HTTP errors.
-
-    Args:
-        response: The aiohttp ClientResponse to verify.
-
-    Raises:
-        InstitutoHidrogrficoApiClientAuthenticationError: For 401/403 errors.
-        aiohttp.ClientResponseError: For other HTTP errors.
-
-    """
-    if response.status in (401, 403):
-        msg = "Invalid credentials"
-        raise InstitutoHidrogrficoApiClientAuthenticationError(
-            msg,
-        )
-    response.raise_for_status()
+class InstitutoHidrogrficoApiClientDataError(InstitutoHidrogrficoApiClientError):
+    """Unexpected or invalid HMAPI response payload."""
 
 
 class InstitutoHidrogrficoApiClient:
-    """
-    API Client for Smart Air Purifier integration.
+    """Thin async HTTP client for HMAPI endpoints."""
 
-    This client demonstrates authentication and API communication patterns
-    for Home Assistant integrations. It handles HTTP requests, error handling,
-    and credential management.
-
-    The username and password are stored and would be used for:
-    - HTTP Basic Auth headers
-    - OAuth token exchange
-    - API key generation
-    - Session token management
-
-    Note: JSONPlaceholder is used as a demo endpoint and doesn't require auth.
-    In production, replace with your actual API endpoint that validates credentials.
-
-    For more information on API clients:
-    https://developers.home-assistant.io/docs/api_lib_index
-
-    Attributes:
-        _username: The username for API authentication.
-        _password: The password for API authentication.
-        _session: The aiohttp ClientSession for making requests.
-
-    """
-
-    def __init__(
-        self,
-        username: str,
-        password: str,
-        session: aiohttp.ClientSession,
-    ) -> None:
-        """
-        Initialize the API Client with credentials.
-
-        Args:
-            username: The username for authentication from config flow.
-            password: The password for authentication from config flow.
-            session: The aiohttp ClientSession to use for requests.
-
-        """
-        self._username = username
-        self._password = password
+    def __init__(self, session: aiohttp.ClientSession) -> None:
+        """Initialize client with shared Home Assistant session."""
         self._session = session
 
-    async def async_get_data(self) -> Any:
-        """
-        Get data from the API.
+    async def async_get_stations(self) -> list[TideStation]:
+        """Return all stations from HMAPI /tides endpoint."""
+        payload = await self._api_get_json("/tides/")
+        stations = parse_stations(payload)
+        if not stations:
+            msg = "Station list is empty or invalid"
+            raise InstitutoHidrogrficoApiClientDataError(msg)
+        return stations
 
-        This method fetches the current state and sensor data from the device.
-        It demonstrates where credentials would be used in production:
-        - Authorization headers (Basic Auth, Bearer Token)
-        - Query parameters (username, api_key)
-        - Session cookies (after login)
-
-        Returns:
-            A dictionary containing the device data.
-
-        Raises:
-            InstitutoHidrogrficoApiClientAuthenticationError: If authentication fails.
-            InstitutoHidrogrficoApiClientCommunicationError: If communication fails.
-            InstitutoHidrogrficoApiClientError: For other API errors.
-
-        """
-        # In production: Use username/password for authentication
-        # Example patterns:
-        # 1. Basic Auth: auth=aiohttp.BasicAuth(self._username, self._password)
-        # 2. Token: headers={"Authorization": f"Bearer {self._get_token()}"}
-        # 3. API Key: params={"username": self._username, "key": self._password}
-
-        return await self._api_wrapper(
-            method="get",
-            url="https://jsonplaceholder.typicode.com/posts/1",
-            # For demo purposes with JSONPlaceholder (no auth required)
-            # In production, add authentication here
-        )
-
-    async def async_set_fan_speed(self, speed: str) -> Any:
-        """
-        Set the fan speed on the device.
-
-        Args:
-            speed: The fan speed to set (low, medium, high, auto).
-
-        Returns:
-            A dictionary containing the API response.
-
-        Raises:
-            InstitutoHidrogrficoApiClientAuthenticationError: If authentication fails.
-            InstitutoHidrogrficoApiClientCommunicationError: If communication fails.
-            InstitutoHidrogrficoApiClientError: For other API errors.
-
-        """
-        # In production: Send authenticated request to change fan speed
-        return await self._api_wrapper(
-            method="patch",
-            url="https://jsonplaceholder.typicode.com/posts/1",
-            data={"fan_speed": speed, "user": self._username},
-            headers={"Content-type": "application/json; charset=UTF-8"},
-        )
-
-    async def async_set_target_humidity(self, humidity: int) -> Any:
-        """
-        Set the target humidity on the device.
-
-        Args:
-            humidity: The target humidity percentage (30-80).
-
-        Returns:
-            A dictionary containing the API response.
-
-        Raises:
-            InstitutoHidrogrficoApiClientAuthenticationError: If authentication fails.
-            InstitutoHidrogrficoApiClientCommunicationError: If communication fails.
-            InstitutoHidrogrficoApiClientError: For other API errors.
-
-        """
-        # In production: Send authenticated request to change humidity setting
-        return await self._api_wrapper(
-            method="patch",
-            url="https://jsonplaceholder.typicode.com/posts/1",
-            data={"target_humidity": humidity, "user": self._username},
-            headers={"Content-type": "application/json; charset=UTF-8"},
-        )
-
-    async def _api_wrapper(
+    async def async_get_tide_events(
         self,
-        method: str,
-        url: str,
-        data: dict | None = None,
-        headers: dict | None = None,
+        *,
+        port_id: int,
+        timezone: Any,
+        period_days: int = DEFAULT_PERIOD_DAYS,
+    ) -> list[TideEvent]:
+        """Return parsed tide events for a station."""
+        payload = await self._api_get_json(
+            "/tidestation/",
+            params={
+                "portID": port_id,
+                "period": period_days,
+            },
+        )
+        return parse_tide_events(payload, timezone)
+
+    async def _api_get_json(
+        self,
+        endpoint: str,
+        *,
+        params: dict[str, Any] | None = None,
     ) -> Any:
-        """
-        Wrapper for API requests with error handling.
+        """Execute HMAPI GET request and return decoded JSON."""
+        url = f"{HMAPI_BASE_URL}{endpoint}"
 
-        This method handles all HTTP requests and translates exceptions
-        into integration-specific exceptions.
-
-        Args:
-            method: The HTTP method (get, post, patch, etc.).
-            url: The URL to request.
-            data: Optional data to send in the request body.
-            headers: Optional headers to include in the request.
-
-        Returns:
-            The JSON response from the API.
-
-        Raises:
-            InstitutoHidrogrficoApiClientAuthenticationError: If authentication fails.
-            InstitutoHidrogrficoApiClientCommunicationError: If communication fails.
-            InstitutoHidrogrficoApiClientError: For other API errors.
-
-        """
         try:
-            async with asyncio.timeout(10):
-                response = await self._session.request(
-                    method=method,
-                    url=url,
-                    headers=headers,
-                    json=data,
-                )
-                _verify_response_or_raise(response)
-                return await response.json()
+            async with asyncio.timeout(15):
+                response = await self._session.get(url, params=params)
+
+            response.raise_for_status()
+
+            try:
+                return await response.json(content_type=None)
+            except (aiohttp.ContentTypeError, ValueError) as exception:
+                msg = f"Invalid JSON payload from HMAPI endpoint {endpoint}"
+                raise InstitutoHidrogrficoApiClientDataError(msg) from exception
 
         except TimeoutError as exception:
-            msg = f"Timeout error fetching information - {exception}"
-            raise InstitutoHidrogrficoApiClientCommunicationError(
-                msg,
-            ) from exception
+            msg = f"Timeout while contacting HMAPI endpoint {endpoint}"
+            raise InstitutoHidrogrficoApiClientCommunicationError(msg) from exception
         except (aiohttp.ClientError, socket.gaierror) as exception:
-            msg = f"Error fetching information - {exception}"
-            raise InstitutoHidrogrficoApiClientCommunicationError(
-                msg,
-            ) from exception
-        except Exception as exception:
-            msg = f"Something really wrong happened! - {exception}"
-            raise InstitutoHidrogrficoApiClientError(
-                msg,
-            ) from exception
+            msg = f"Communication error for HMAPI endpoint {endpoint}: {exception}"
+            raise InstitutoHidrogrficoApiClientCommunicationError(msg) from exception

@@ -1,74 +1,40 @@
-"""Service actions package for hidrograficopt."""
+"""Service registration for hidrograficopt."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from custom_components.hidrograficopt.const import DOMAIN, LOGGER
-from custom_components.hidrograficopt.service_actions.example_service import (
-    async_handle_example_action,
-    async_handle_reload_data,
-)
-from homeassistant.core import ServiceCall
+from custom_components.hidrograficopt.service_actions.reload_data import async_handle_reload_data
+from homeassistant.core import ServiceCall, ServiceResponse, SupportsResponse
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
 
-# Service action names - only used within service_actions module
-SERVICE_EXAMPLE_ACTION = "example_action"
 SERVICE_RELOAD_DATA = "reload_data"
 
 
 async def async_setup_services(hass: HomeAssistant) -> None:
-    """
-    Register services for the integration.
+    """Register integration services."""
 
-    Services are registered at component level (in async_setup) rather than
-    per config entry. This is a Silver Quality Scale requirement and ensures:
-    - Service validation works correctly
-    - Services are available even without config entries
-    - Helpful error messages are provided
-
-    Service handlers iterate over all config entries to find the relevant one.
-    """
-
-    async def handle_example_action(call: ServiceCall) -> None:
-        """Handle the example_action service call."""
-        # Find all config entries for this domain
+    async def handle_reload_data(call: ServiceCall) -> ServiceResponse:
         entries = hass.config_entries.async_entries(DOMAIN)
         if not entries:
             LOGGER.warning("No config entries found for %s", DOMAIN)
-            return
+            return cast(ServiceResponse, {"status": "no_entries"})
 
-        # Use first entry (or implement logic to select specific entry)
-        entry = entries[0]
-        await async_handle_example_action(hass, entry, call)
-
-    async def handle_reload_data(call: ServiceCall) -> None:
-        """Handle the reload_data service call."""
-        # Find all config entries for this domain
-        entries = hass.config_entries.async_entries(DOMAIN)
-        if not entries:
-            LOGGER.warning("No config entries found for %s", DOMAIN)
-            return
-
-        # Reload data for all entries
+        results: dict[str, ServiceResponse] = {}
         for entry in entries:
-            await async_handle_reload_data(hass, entry, call)
+            results[entry.entry_id] = await async_handle_reload_data(hass, entry, call)
 
-    # Register services (only once at component level)
-    if not hass.services.has_service(DOMAIN, SERVICE_EXAMPLE_ACTION):
-        hass.services.async_register(
-            DOMAIN,
-            SERVICE_EXAMPLE_ACTION,
-            handle_example_action,
-        )
+        return cast(ServiceResponse, {"status": "ok", "results": results})
 
     if not hass.services.has_service(DOMAIN, SERVICE_RELOAD_DATA):
         hass.services.async_register(
             DOMAIN,
             SERVICE_RELOAD_DATA,
             handle_reload_data,
+            supports_response=SupportsResponse.OPTIONAL,
         )
 
-    LOGGER.debug("Services registered for %s", DOMAIN)
+    LOGGER.debug("Registered services for %s", DOMAIN)

@@ -1,16 +1,20 @@
-"""Constants for hidrograficopt."""
+"""Constants for the hidrograficopt integration."""
 
 from logging import Logger, getLogger
 
+DOMAIN = "hidrograficopt"
 LOGGER: Logger = getLogger(__package__)
 
-# Integration metadata
-DOMAIN = "hidrograficopt"
-ATTRIBUTION = "Data provided by http://jsonplaceholder.typicode.com/"
+ATTRIBUTION = "Data provided by Instituto Hidrografico (www.hidrografico.pt)"
 
-# Platform parallel updates - applied to all platforms
+CONF_PORT_ID = "port_id"
+CONF_STATION_NAME = "station_name"
+CONF_UPDATE_INTERVAL_MINUTES = "update_interval_minutes"
+
+DEFAULT_UPDATE_INTERVAL_MINUTES = 60
+DEFAULT_PERIOD_DAYS = 7
+
+HMAPI_BASE_URL = "https://www.hidrografico.pt/hmapi"
+HMAPI_WEBSITE_URL = "https://www.hidrografico.pt/"
+
 PARALLEL_UPDATES = 1
-
-# Default configuration values
-DEFAULT_UPDATE_INTERVAL_HOURS = 1
-DEFAULT_ENABLE_DEBUGGING = False

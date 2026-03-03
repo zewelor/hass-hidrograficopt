@@ -543,6 +543,7 @@ See `.github/copilot-instructions.md` for detailed workflow guidance.
 - What worked in older versions may be deprecated
 - Use official docs and working examples over guesswork
 - When in doubt, search for recent integration examples in Home Assistant Core
+- For this integration's external API contract details and known quirks, consult `docs/development/HMAPI.md` before changing API/coordinator/config flow logic.
 
 **Tool documentation:**
 
@@ -576,6 +577,7 @@ See `.github/copilot-instructions.md` for detailed workflow guidance.
 - [Home Assistant Developer Docs](https://developers.home-assistant.io/) - Primary reference
 - [Integration Quality Scale](https://developers.home-assistant.io/docs/integration_quality_scale_index)
 - [Architecture Docs](https://developers.home-assistant.io/docs/architecture_index)
+- `docs/development/HMAPI.md` - Verified HMAPI endpoints, payload shape, quirks, and validation commands
 - [Ruff Rules](https://docs.astral.sh/ruff/rules/) - Linter documentation
 - [Pyright Configuration](https://microsoft.github.io/pyright/#/configuration) - Type checker documentation
 - [pytest Documentation](https://docs.pytest.org/) - Testing framework
