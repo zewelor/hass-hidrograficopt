@@ -23,6 +23,8 @@
     },
     "abort": {
       "already_configured": "This station is already configured.",
+      "cannot_connect": "Unable to connect to HMAPI.",
+      "no_stations": "No stations are currently available from HMAPI.",
       "reconfigure_successful": "Reconfiguration successful."
     }
   },

@@ -78,7 +78,7 @@ Use these rules in the integration API layer and coordinator:
    - primary: `%Y-%m-%d %H:%M:%S`
    - fallback: `%Y-%m-%d %H:%M`
 3. Sort events chronologically after parsing.
-4. Treat parsed times in station timezone (auto-detected from station coordinates).
+4. Treat parsed times in the integration effective timezone (override option first, then stored station timezone, then Home Assistant timezone).
 5. Allow optional timezone override via integration options for edge cases.
 6. Derive nearest high/low from upcoming filtered events only.
 7. Derive tide direction from nearest upcoming tide event:

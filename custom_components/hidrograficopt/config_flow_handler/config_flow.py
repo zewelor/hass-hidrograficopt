@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 class InstitutoHidrogrficoConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for hidrograficopt."""
 
-    VERSION = 2
+    VERSION = 3
 
     def __init__(self) -> None:
         """Initialize config flow handler."""
@@ -51,7 +51,15 @@ class InstitutoHidrogrficoConfigFlowHandler(config_entries.ConfigFlow, domain=DO
         errors: dict[str, str] = {}
 
         if not self._stations:
-            self._stations = await self._async_fetch_stations()
+            try:
+                self._stations = await self._async_fetch_stations()
+            except InstitutoHidrogrficoApiClientCommunicationError:
+                return self.async_abort(reason="cannot_connect")
+            except InstitutoHidrogrficoApiClientDataError:
+                return self.async_abort(reason="no_stations")
+
+        if not self._stations:
+            return self.async_abort(reason="no_stations")
 
         if user_input is not None:
             try:
@@ -95,7 +103,15 @@ class InstitutoHidrogrficoConfigFlowHandler(config_entries.ConfigFlow, domain=DO
         errors: dict[str, str] = {}
 
         if not self._stations:
-            self._stations = await self._async_fetch_stations()
+            try:
+                self._stations = await self._async_fetch_stations()
+            except InstitutoHidrogrficoApiClientCommunicationError:
+                return self.async_abort(reason="cannot_connect")
+            except InstitutoHidrogrficoApiClientDataError:
+                return self.async_abort(reason="no_stations")
+
+        if not self._stations:
+            return self.async_abort(reason="no_stations")
 
         default_port = entry.data.get(CONF_PORT_ID)
 
@@ -144,10 +160,7 @@ class InstitutoHidrogrficoConfigFlowHandler(config_entries.ConfigFlow, domain=DO
     async def _async_fetch_stations(self) -> list[TideStation]:
         """Fetch station list from HMAPI."""
         client = InstitutoHidrogrficoApiClient(async_create_clientsession(self.hass))
-        try:
-            return await client.async_get_stations()
-        except (InstitutoHidrogrficoApiClientCommunicationError, InstitutoHidrogrficoApiClientDataError):
-            return []
+        return await client.async_get_stations()
 
     def _selector_options(self) -> list[selector.SelectOptionDict]:
         """Convert stations to selector options."""

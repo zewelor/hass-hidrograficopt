@@ -26,29 +26,19 @@ def get_user_schema(
     default_port_id: int | None = None,
 ) -> vol.Schema:
     """Build schema for user setup."""
-    if port_options:
-        default_value = str(default_port_id) if default_port_id is not None else port_options[0]["value"]
-        return vol.Schema(
-            {
-                vol.Required(
-                    CONF_PORT_ID,
-                    default=default_value,
-                ): _port_selector_options(port_options),
-            }
-        )
+    if not port_options:
+        msg = "Port options cannot be empty"
+        raise ValueError(msg)
+
+    default_value = str(default_port_id) if default_port_id is not None else str(port_options[0]["value"])
+    if all(str(option["value"]) != default_value for option in port_options):
+        default_value = str(port_options[0]["value"])
 
     return vol.Schema(
         {
             vol.Required(
                 CONF_PORT_ID,
-                default=default_port_id if default_port_id is not None else 112,
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    min=1,
-                    max=99999,
-                    step=1,
-                    mode=selector.NumberSelectorMode.BOX,
-                )
-            ),
+                default=default_value,
+            ): _port_selector_options(port_options),
         }
     )

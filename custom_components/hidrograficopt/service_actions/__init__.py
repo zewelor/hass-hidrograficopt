@@ -5,8 +5,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 from custom_components.hidrograficopt.const import DOMAIN, LOGGER
+from custom_components.hidrograficopt.data import InstitutoHidrogrficoConfigEntry
 from custom_components.hidrograficopt.service_actions.reload_data import async_handle_reload_data
+from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import ServiceCall, ServiceResponse, SupportsResponse
+from homeassistant.exceptions import ServiceValidationError
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -18,10 +21,14 @@ async def async_setup_services(hass: HomeAssistant) -> None:
     """Register integration services."""
 
     async def handle_reload_data(call: ServiceCall) -> ServiceResponse:
-        entries = hass.config_entries.async_entries(DOMAIN)
+        entries = [
+            cast(InstitutoHidrogrficoConfigEntry, entry)
+            for entry in hass.config_entries.async_entries(DOMAIN)
+            if entry.state is ConfigEntryState.LOADED
+        ]
         if not entries:
-            LOGGER.warning("No config entries found for %s", DOMAIN)
-            return cast(ServiceResponse, {"status": "no_entries"})
+            msg = f"No loaded config entries found for {DOMAIN}"
+            raise ServiceValidationError(msg)
 
         results: dict[str, ServiceResponse] = {}
         for entry in entries:

@@ -33,13 +33,13 @@ Custom Home Assistant integration for Portuguese tide data from Instituto Hidrog
 
 1. Go to Settings -> Devices & Services
 2. Add integration "Instituto Hidrográfico Integration"
-3. Select a tide station (or provide port ID manually)
+3. Select a tide station
 
 ## Options
 
 - Update interval in minutes (default: 60)
 - Optional timezone override (IANA format, e.g. `Atlantic/Madeira`)
-- By default, timezone is auto-detected from station coordinates
+- By default, timezone uses your Home Assistant configured timezone
 
 ## Service
 
@@ -63,3 +63,9 @@ service: hidrograficopt.reload_data
 
 This repository was migrated from a template/demo integration to a real tide integration.
 Existing template config entries are not migrated automatically and should be removed/re-added.
+
+### 1.0.0 breaking changes
+
+- Removed template-only internal modules and compatibility wrappers
+- Config flow no longer falls back to manual port ID entry when station list cannot be fetched
+- `hidrograficopt.reload_data` now raises Home Assistant exceptions on failure instead of returning error payloads

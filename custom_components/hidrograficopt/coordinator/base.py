@@ -5,8 +5,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from custom_components.hidrograficopt.api import (
-    InstitutoHidrogrficoApiClientCommunicationError,
-    InstitutoHidrogrficoApiClientDataError,
     InstitutoHidrogrficoApiClientError,
     TideDirection,
     TideEvent,
@@ -36,9 +34,12 @@ class InstitutoHidrogrficoDataUpdateCoordinator(DataUpdateCoordinator[dict[str, 
         """Fetch station data and compute derived fields."""
         try:
             port_id = int(self.config_entry.data[CONF_PORT_ID])
-            station_name = str(self.config_entry.data.get(CONF_STATION_NAME, f"Port {port_id}"))
+            station_name = str(self.config_entry.data[CONF_STATION_NAME])
             timezone_name, timezone_source = self._resolve_effective_timezone()
-            timezone = dt_util.get_time_zone(timezone_name) or dt_util.UTC
+            timezone = dt_util.get_time_zone(timezone_name)
+            if timezone is None:
+                msg = f"Invalid timezone resolved for station {port_id}: {timezone_name}"
+                raise UpdateFailed(msg)
             now = dt_util.now()
 
             events = await self.config_entry.runtime_data.client.async_get_tide_events(
@@ -63,8 +64,9 @@ class InstitutoHidrogrficoDataUpdateCoordinator(DataUpdateCoordinator[dict[str, 
                 "effective_timezone": timezone_name,
                 "timezone_source": timezone_source,
             }
-        except (InstitutoHidrogrficoApiClientCommunicationError, InstitutoHidrogrficoApiClientDataError) as exception:
-            raise UpdateFailed(str(exception)) from exception
+        except (KeyError, TypeError, ValueError) as exception:
+            msg = f"Invalid config entry data: {exception}"
+            raise UpdateFailed(msg) from exception
         except InstitutoHidrogrficoApiClientError as exception:
             raise UpdateFailed(str(exception)) from exception
         return data
@@ -75,15 +77,16 @@ class InstitutoHidrogrficoDataUpdateCoordinator(DataUpdateCoordinator[dict[str, 
         if option_timezone:
             return option_timezone, "override"
 
-        station_timezone = normalize_timezone_name(self.config_entry.data.get(CONF_STATION_TIMEZONE))
-        if station_timezone:
+        station_timezone = normalize_timezone_name(str(self.config_entry.data[CONF_STATION_TIMEZONE]))
+        if station_timezone is not None:
             return station_timezone, "station"
 
         hass_timezone = normalize_timezone_name(self.hass.config.time_zone)
         if hass_timezone:
             return hass_timezone, "ha_fallback"
 
-        return "UTC", "ha_fallback"
+        msg = "No valid timezone available in options, config entry, or Home Assistant settings"
+        raise UpdateFailed(msg)
 
 
 def _find_next_tide(events: list[TideEvent], tide_type: TideType) -> TideEvent | None:

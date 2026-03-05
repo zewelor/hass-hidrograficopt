@@ -28,12 +28,12 @@ class InstitutoHidrogrficoEntity(CoordinatorEntity[InstitutoHidrogrficoDataUpdat
         super().__init__(coordinator)
         self.entity_description = entity_description
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_{entity_description.key}"
-        station_name = str(coordinator.config_entry.data.get("station_name", coordinator.config_entry.title))
+        station_name = str(coordinator.config_entry.data["station_name"])
         self._attr_device_info = DeviceInfo(
             identifiers={(coordinator.config_entry.domain, coordinator.config_entry.entry_id)},
             name=station_name,
             manufacturer="Instituto Hidrografico",
             model="HMAPI Tide Station",
-            serial_number=str(coordinator.config_entry.data.get("port_id", "unknown")),
+            serial_number=str(coordinator.config_entry.data["port_id"]),
             configuration_url=HMAPI_WEBSITE_URL,
         )

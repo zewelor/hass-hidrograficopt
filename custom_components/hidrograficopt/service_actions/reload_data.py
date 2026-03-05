@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from custom_components.hidrograficopt.const import LOGGER
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers.update_coordinator import UpdateFailed
 from homeassistant.util import dt as dt_util
 
@@ -28,13 +27,8 @@ async def async_handle_reload_data(
     try:
         await coordinator.async_request_refresh()
     except (UpdateFailed, ConfigEntryNotReady) as exception:
-        LOGGER.exception("Failed to reload data for %s", entry.entry_id)
-        return {
-            "status": "error",
-            "entry_id": entry.entry_id,
-            "error": str(exception),
-            "timestamp": dt_util.now().isoformat(),
-        }
+        msg = f"Failed to reload data for {entry.entry_id}: {exception}"
+        raise HomeAssistantError(msg) from exception
 
     duration_ms = (dt_util.now() - started).total_seconds() * 1000
     return {
