@@ -412,7 +412,7 @@ See `.github/instructions/python.instructions.md` for linter overrides and error
 
 - You may use `# noqa: CODE` or `# type: ignore` when genuinely necessary
 - Use sparingly and only with good reason (e.g., false positives, external library issues)
-See `.github/instructions/python.instructions.md` for linter overrides and error recovery strategies.
+  See `.github/instructions/python.instructions.md` for linter overrides and error recovery strategies.
 
 ### Error Recovery Strategy
 
@@ -498,9 +498,9 @@ See `.github/instructions/tests.instructions.md` for comprehensive testing patte
 
 **Version bump policy:**
 
-- After significant functional changes (new features, behavior changes, API/coordinator/entity logic changes), always bump integration version in `custom_components/hidrograficopt/manifest.json`.
-- Use semantic versioning: patch for fixes, minor for backward-compatible features, major for breaking changes.
-- For HACS semver visibility, create and push a matching Git tag and GitHub release (for example `v0.2.0`) after bumping `manifest.json`; otherwise HACS may show commit hashes instead of version numbers.
+- Use Conventional Commits (`feat:`, `fix:`, `perf:`, etc.) so Release Please can infer the next version and changelog entries.
+- For normal releases, do not manually bump `custom_components/hidrograficopt/manifest.json`; Release Please updates it in the release PR and creates the matching Git tag and GitHub release after that PR is merged.
+- If you intentionally bootstrap or manually change the release baseline, keep `custom_components/hidrograficopt/manifest.json` and `.release-please-manifest.json` in sync, then verify with `script/version --check`.
 
 ## File Changes
 

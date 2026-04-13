@@ -4,17 +4,47 @@ updates:
   - package-ecosystem: "devcontainers"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore(deps)"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore(deps)"
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore(deps)"
     ignore:
-      # Dependabot should not update Home Assistant as that should match the homeassistant key in hacs.json
+      # homeassistant is a transitive dependency pulled in by pytest-homeassistant-custom-component.
+      # Its version must stay in sync with the "homeassistant" key in hacs.json — update that manually
+      # when bumping pytest-homeassistant-custom-component.
       - dependency-name: "homeassistant"
+    cooldown:
+      semver-patch-days: 3
+      semver-minor-days: 7
+    groups:
+      python-dependencies:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
+        exclude-patterns:
+          - "pytest-homeassistant-custom-component"

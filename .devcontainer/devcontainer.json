@@ -1,12 +1,13 @@
 {
   "name": "HA hidrograficopt Dev Container",
-  "image": "mcr.microsoft.com/devcontainers/python:3.13",
+  "image": "mcr.microsoft.com/devcontainers/python:3-3.14",
   "postCreateCommand": "bash .devcontainer/setup-shell.sh && bash .devcontainer/setup-git.sh && script/setup/setup",
+  "postAttachCommand": "bash .devcontainer/post-attach.sh",
   "containerEnv": {
     // Home Assistant version to install in the devcontainer.
-    // Uncomment and set a specific version if needed (e.g., "2025.12.3").
+    // Set to a specific version (e.g., "2026.4.0") or "latest" to always use the newest release.
     // If not set, defaults to version from hacs.json.
-    // "HA_VERSION": "2025.12.3",
+    // "HA_VERSION": "2026.4.0",
     // Install HACS in the Home Assistant installation
     "HA_INSTALL_HACS": "1",
     // Enable asyncio debug mode for easier debugging of async code
@@ -23,8 +24,33 @@
       "version": "lts"
     },
     "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainer-community/devcontainer-features/yq:1": {
+      "version": "latest"
+    },
     "ghcr.io/devcontainers-extra/features/apt-packages:1": {
-      "packages": ["ffmpeg", "libturbojpeg0", "libpcap-dev"]
+      "packages": [
+        "bat",
+        "eza",
+        "fd-find",
+        "ffmpeg",
+        "fzf",
+        "git-delta",
+        "httpie",
+        "hyperfine",
+        "ipython3",
+        "jo",
+        "jq",
+        "libpcap-dev",
+        "libturbojpeg0",
+        "miller",
+        "moreutils",
+        "ripgrep",
+        "shellcheck",
+        "shfmt",
+        "sqlite3",
+        "tree",
+        "yamllint"
+      ]
     }
   },
   "forwardPorts": [8123],
@@ -58,7 +84,8 @@
         "files.eol": "\n",
         "files.trimTrailingWhitespace": true,
         "files.associations": {
-          "**/translations/*.json": "jsontranslation"
+          "**/translations/*.json": "jsontranslation",
+          "**/*ignore": "ignore"
         },
         "markdown.validate.enabled": false,
         "markdown.validate.fileLinks.enabled": "ignore",
@@ -108,6 +135,9 @@
           "editor.defaultFormatter": "esbenp.prettier-vscode",
           "editor.formatOnSave": false
         },
+        "github.copilot.chat.commitMessageGeneration.instructions": [
+          { "file": ".github/instructions/blueprint.commit-message.instructions.md" }
+        ],
         "json.schemas": [
           {
             "fileMatch": ["custom_components/*/manifest.json"],
@@ -132,7 +162,8 @@
   "mounts": [
     // Mount host gitconfig for local development (ignored in Codespaces)
     // In Codespaces, GitHub automatically configures Git with your account
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/vscode/.gitconfig.host,type=bind,consistency=cached,readonly"
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/vscode/.gitconfig.host,type=bind,consistency=cached,readonly",
+    "source=${localEnv:HOME}/.config/gh,target=/home/vscode/.config/gh,type=bind,consistency=cached,readonly"
   ],
   "remoteUser": "vscode"
 }

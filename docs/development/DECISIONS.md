@@ -133,6 +133,29 @@ Each decision is documented with:
 
 ---
 
+### Use Release Please For Versioning And Releases
+
+**Date:** 2026-04-13
+
+**Context:** The repository started with a manual `tag-from-manifest` workflow inherited from an older template state. The upstream blueprint now manages releases with Release Please.
+
+**Decision:** Switch release automation to `release-please` and track the current release baseline in `.release-please-manifest.json`.
+
+**Rationale:**
+
+- Matches the current upstream blueprint workflow
+- Removes manual version tagging logic from normal releases
+- Keeps `manifest.json`, changelog generation, Git tags, and GitHub releases in one release PR flow
+- Makes future template syncs simpler
+
+**Consequences:**
+
+- Normal releases now require Conventional Commits for accurate version inference
+- The GitHub repository must allow Actions to create and approve pull requests
+- `manifest.json` should no longer be bumped manually for standard releases
+
+---
+
 ## Future Considerations
 
 ### State Restoration

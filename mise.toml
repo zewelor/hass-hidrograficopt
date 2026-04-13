@@ -1,0 +1,6 @@
+[tools]
+python = "3.14.2"
+node = "lts"
+uv = "0.11.6"
+shellcheck = "0.10.0"
+shfmt = "3.8.0"
