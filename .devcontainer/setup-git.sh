@@ -13,6 +13,13 @@ set -e
 
 echo "Setting up Git configuration..."
 
+_devcontainer_dir="$(cd "$(dirname "$0")" && pwd)"
+if [[ -f "$_devcontainer_dir/hooks/setup-git.pre.sh" ]]; then
+    echo "ℹ Running hook: .devcontainer/hooks/setup-git.pre.sh"
+    # shellcheck source=/dev/null
+    source "$_devcontainer_dir/hooks/setup-git.pre.sh"
+fi
+
 # Check if we're in Codespaces (GitHub automatically configures Git)
 if [ -n "$CODESPACES" ]; then
     echo "✓ Running in GitHub Codespaces - Git already configured by GitHub"
@@ -79,25 +86,25 @@ if grep -q '^\[alias\]' "$HOME/.gitconfig.host"; then
 
     # First, collect all aliases from host config
     TEMP_ALIASES=$(mktemp)
-    sed -n '/^\[alias\]/,/^\[/p' "$HOME/.gitconfig.host" | \
-        grep -v '^\[' | \
-        grep -v '^$' | \
+    sed -n '/^\[alias\]/,/^\[/p' "$HOME/.gitconfig.host" |
+        grep -v '^\[' |
+        grep -v '^$' |
         while IFS= read -r line; do
             # Skip aliases with macOS-specific paths
             if echo "$line" | grep -q -E '(^|[/\s])(Applications|usr/local)(/|$)'; then
-          continue
+                continue
             fi
-            echo "$line" >> "$TEMP_ALIASES"
+            echo "$line" >>"$TEMP_ALIASES"
         done
 
     # Apply each alias (git config --global overwrites existing values = idempotent)
     if [ -s "$TEMP_ALIASES" ]; then
         while IFS= read -r line; do
             ALIAS_NAME=$(echo "$line" | awk '{print $1}')
-            ALIAS_VALUE=$(echo "$line" | sed "s/^$ALIAS_NAME = //")
+            ALIAS_VALUE=${line#"$ALIAS_NAME = "}
             git config --global "alias.$ALIAS_NAME" "$ALIAS_VALUE" 2>/dev/null || true
-        done < "$TEMP_ALIASES"
-        echo "  Synced $(wc -l < "$TEMP_ALIASES") aliases"
+        done <"$TEMP_ALIASES"
+        echo "  Synced $(wc -l <"$TEMP_ALIASES") aliases"
     fi
 
     rm -f "$TEMP_ALIASES"
@@ -125,3 +132,10 @@ if [ -n "$SIGNING_KEY" ]; then
 fi
 
 echo "✓ Git configuration complete"
+
+if [[ -f "$_devcontainer_dir/hooks/setup-git.post.sh" ]]; then
+    echo "ℹ Running hook: .devcontainer/hooks/setup-git.post.sh"
+    # shellcheck source=/dev/null
+    source "$_devcontainer_dir/hooks/setup-git.post.sh"
+fi
+unset _devcontainer_dir

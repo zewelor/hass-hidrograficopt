@@ -20,6 +20,17 @@ Pull requests are the best way to propose changes to the codebase.
 5. Test your contribution.
 6. Issue that pull request!
 
+## Release process
+
+This repository uses `release-please` for versioning and GitHub releases.
+
+- Use Conventional Commits when possible, for example `feat:`, `fix:`, `perf:`.
+- Do not manually bump `custom_components/hidrograficopt/manifest.json` for normal releases.
+- After changes land on `main`, GitHub opens or updates a release PR automatically.
+- Review and merge that release PR when you want to publish the next release.
+
+See `docs/development/RELEASE.md` for the full workflow.
+
 ## Any contributions you make will be under the MIT Software License
 
 In short, when you submit code changes, your submissions are understood to be under the same [MIT License](http://choosealicense.com/licenses/mit/) that covers the project. Feel free to contact the maintainers if that's a concern.
@@ -41,7 +52,7 @@ Report a bug by [opening a new issue](../../issues/new/choose); it's that easy!
 - What actually happens
 - Notes (possibly including why you think this might be happening, or stuff you tried that didn't work)
 
-People *love* thorough bug reports. I'm not even kidding.
+People _love_ thorough bug reports. I'm not even kidding.
 
 ## Use a Consistent Coding Style
 

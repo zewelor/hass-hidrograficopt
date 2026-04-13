@@ -8,7 +8,8 @@
   "files.eol": "\n",
   "files.trimTrailingWhitespace": true,
   "files.associations": {
-    "**/translations/*.json": "jsontranslation"
+    "**/translations/*.json": "jsontranslation",
+    "**/*ignore": "ignore"
   },
   "markdown.validate.enabled": false,
   "markdown.validate.fileLinks.enabled": "ignore",
@@ -59,6 +60,10 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": false
   },
+
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    { "file": ".github/instructions/blueprint.commit-message.instructions.md" }
+  ],
 
   "json.schemas": [
     // These values differs between working with devcontainer and locally, therefore their values should NOT be in sync!

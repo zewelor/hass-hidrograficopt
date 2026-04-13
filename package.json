@@ -1,0 +1,12 @@
+{
+  "name": "hidrograficopt-tools",
+  "version": "1.0.0",
+  "description": "Development tools for Instituto Hidrográfico integration",
+  "private": true,
+  "devDependencies": {
+    "@github/copilot": "1.0.24",
+    "markdownlint-cli2": "0.22.0",
+    "prettier": "3.8.2",
+    "pyright": "1.1.408"
+  }
+}
