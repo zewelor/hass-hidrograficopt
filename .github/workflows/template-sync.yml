@@ -5,7 +5,8 @@
 # Files listed in .templatesyncignore are never touched.
 #
 # This workflow is provided by the template itself. You can safely customize
-# the schedule, add a PAT secret for workflow-file updates, or disable it.
+# the schedule, add an optional TEMPLATE_SYNC_TOKEN secret for workflow-file
+# updates, or disable it.
 #
 # Keeping .github/workflows/template-sync.yml in .templatesyncignore (default)
 # means the template cannot overwrite your customizations here.
@@ -30,11 +31,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN || github.token }}
+          # Required when using a PAT so the sync action can push with it.
+          persist-credentials: false
 
       - name: Sync from blueprint template
         uses: AndreasAugustin/actions-template-sync@v2
         with:
           source_repo_path: jpawlowski/hacs.integration_blueprint
+          target_gh_token: ${{ secrets.TEMPLATE_SYNC_TOKEN || github.token }}
           upstream_branch: main
           pr_labels: template-sync
           pr_title: "chore: sync updates from integration blueprint template"
