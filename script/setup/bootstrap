@@ -19,6 +19,10 @@ cd "$SCRIPT_DIR/../.."
 
 # shellcheck source=script/.lib/output.sh
 source "$SCRIPT_DIR/../.lib/output.sh"
+# shellcheck source=script/.lib/download.sh
+source "$SCRIPT_DIR/../.lib/download.sh"
+# shellcheck source=script/.lib/ha_version.sh
+source "$SCRIPT_DIR/../.lib/ha_version.sh"
 
 run_hook "setup/bootstrap" "pre"
 
@@ -133,35 +137,32 @@ else
     log_info "No runtime dependencies defined (this is normal for blueprints)"
 fi
 
-HA_VERSION="${HA_VERSION:-$(grep '"homeassistant"' hacs.json | head -1 | sed 's/.*"homeassistant"\s*:\s*"\([^"]*\)".*/\1/')}"
-
-if [[ -z "$HA_VERSION" ]]; then
-    log_error "HA_VERSION not set and could not be determined from hacs.json"
-    exit 1
-fi
-
-if [[ "$HA_VERSION" == "latest" ]]; then
-    log_info "Resolving latest Home Assistant version via PyPI..."
-    HA_VERSION=$(curl -fsSL https://pypi.org/pypi/homeassistant/json | python3 -c "import sys, json; print(json.load(sys.stdin)['info']['version'])")
+if [[ -n "${HA_VERSION:-}" ]]; then
+    resolve_ha_version HA_VERSION "$HA_VERSION"
+else
+    HA_VERSION=$(grep '"homeassistant"' hacs.json | head -1 | sed 's/.*"homeassistant"\s*:\s*"\([^"]*\)".*/\1/')
     if [[ -z "$HA_VERSION" ]]; then
-        log_error "Failed to resolve latest Home Assistant version from PyPI"
+        log_error "HA_VERSION not set and could not be determined from hacs.json"
         exit 1
     fi
-    log_info "Resolved to: ${HA_VERSION}"
+    if [[ "$HA_VERSION" =~ ^[0-9]{4}\.[0-9]+\.0$ ]]; then
+        HA_VERSION="${HA_VERSION%.*}"
+    fi
+    resolve_ha_version HA_VERSION "$HA_VERSION"
 fi
 
 HA_CORE_BASE_URL="https://raw.githubusercontent.com/home-assistant/core/${HA_VERSION}"
 
 log_header "Installing Home Assistant ${HA_VERSION} runtime dependencies"
 mkdir -p "/tmp/homeassistant"
-curl -fsSL "${HA_CORE_BASE_URL}/homeassistant/package_constraints.txt" -o "/tmp/homeassistant/package_constraints.txt" # constraints for requirements files
-curl -fsSL "${HA_CORE_BASE_URL}/requirements.txt" -o "/tmp/requirements.txt"                                           # required by requirements_all.txt
-curl -fsSL "${HA_CORE_BASE_URL}/requirements_all.txt" -o "/tmp/requirements_all.txt"
+_download "${HA_CORE_BASE_URL}/homeassistant/package_constraints.txt" "/tmp/homeassistant/package_constraints.txt" # constraints for requirements files
+_download "${HA_CORE_BASE_URL}/requirements.txt" "/tmp/requirements.txt"                                           # required by requirements_all.txt
+_download "${HA_CORE_BASE_URL}/requirements_all.txt" "/tmp/requirements_all.txt"
 uv pip install --requirement "/tmp/requirements_all.txt"
 
 log_header "Installing Home Assistant ${HA_VERSION} test dependencies"
-curl -fsSL "${HA_CORE_BASE_URL}/requirements_test_pre_commit.txt" -o "/tmp/requirements_test_pre_commit.txt" # required by requirements_test.txt
-curl -fsSL "${HA_CORE_BASE_URL}/requirements_test.txt" -o "/tmp/requirements_test.txt"
+_download "${HA_CORE_BASE_URL}/requirements_test_pre_commit.txt" "/tmp/requirements_test_pre_commit.txt" # required by requirements_test.txt
+_download "${HA_CORE_BASE_URL}/requirements_test.txt" "/tmp/requirements_test.txt"
 uv pip install --requirement "/tmp/requirements_test.txt"
 
 log_header "Installing Home Assistant ${HA_VERSION} core"
@@ -173,18 +174,11 @@ set -e
 
 log_header "Installing Node.js dependencies"
 if command -v npm >/dev/null 2>&1; then
-    if [[ "${VENV_IS_EXTERNAL:-false}" == "true" ]]; then
-        NODE_MODULES_PATH="$HOME/.local/node_modules"
-        if [[ ! -d "$NODE_MODULES_PATH" ]]; then
-            log_step "Creating external node_modules at $NODE_MODULES_PATH"
-            mkdir -p "$NODE_MODULES_PATH"
-        fi
-        if [[ -d node_modules && ! -L node_modules ]]; then
-            log_warning "Skipping node_modules symlink: directory already exists (not a symlink)"
-        else
-            ln -sfn "$NODE_MODULES_PATH" node_modules
-            log_step "node_modules -> $NODE_MODULES_PATH (Container FS, off bind mount)"
-        fi
+    # node_modules is kept off the bind mount via a named Docker volume (devcontainer.json).
+    # Docker creates named volumes owned by root -- fix ownership before npm ci writes into it.
+    if [[ -d node_modules && "$(stat -c %U node_modules 2>/dev/null)" == "root" ]]; then
+        log_step "Fixing node_modules ownership (Docker volume created as root)"
+        sudo chown "$(id -un):$(id -gn)" node_modules
     fi
     npm ci --silent
 else
