@@ -1,12 +1,18 @@
 {
   "name": "HA hidrograficopt Dev Container",
-  "image": "mcr.microsoft.com/devcontainers/python:3-3.14",
+  "image": "mcr.microsoft.com/devcontainers/base:debian",
   "postCreateCommand": "bash .devcontainer/setup-shell.sh && bash .devcontainer/setup-git.sh && script/setup/setup",
   "postAttachCommand": "bash .devcontainer/post-attach.sh",
   "containerEnv": {
     // Home Assistant version to install in the devcontainer.
-    // Set to a specific version (e.g., "2026.4.0") or "latest" to always use the newest release.
-    // If not set, defaults to version from hacs.json.
+    // Supported values:
+    //   "latest"       -> newest stable release
+    //   "beta"         -> newest pre-release (alpha/beta/RC)
+    //   "YEAR.MONTH"   -> latest patch for that month (e.g. "2026.4")
+    //   "YEAR.MONTH.0" -> same as above (hacs.json minimum -> resolved to latest patch)
+    //   "YEAR.MONTH.N" -> exact stable version (e.g. "2026.4.2")
+    //   "YEAR.MONTH.NbM" -> exact pre-release (e.g. "2026.4.0b1")
+    // If not set, defaults to the version in hacs.json (resolved to latest patch).
     // "HA_VERSION": "2026.4.0",
     // Install HACS in the Home Assistant installation
     "HA_INSTALL_HACS": "1",
@@ -20,6 +26,9 @@
     "APT_UPDATE": "0"
   },
   "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.14"
+    },
     "ghcr.io/devcontainers/features/node:1": {
       "version": "lts"
     },
@@ -29,6 +38,8 @@
     },
     "ghcr.io/devcontainers-extra/features/apt-packages:1": {
       "packages": [
+        "autoconf",
+        "automake",
         "bat",
         "eza",
         "fd-find",
@@ -41,9 +52,12 @@
         "jo",
         "jq",
         "libpcap-dev",
+        "libssl-dev",
+        "libtool",
         "libturbojpeg0",
         "miller",
         "moreutils",
+        "pipx",
         "ripgrep",
         "shellcheck",
         "shfmt",
@@ -72,7 +86,8 @@
         "ms-python.python",
         "ms-python.vscode-pylance",
         "ms-vscode-remote.remote-containers",
-        "redhat.vscode-yaml"
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml"
       ],
       // Please keep this file in sync with settings in .vscode/settings.default.jsonc
       "settings": {
@@ -160,10 +175,12 @@
     }
   },
   "mounts": [
+    // Named volume for node_modules: keeps it on Container FS (not bind mount) for performance.
+    // Docker manages this volume separately from the workspace -- npm ci runs fast on overlay FS.
+    "source=hidrograficopt_node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
     // Mount host gitconfig for local development (ignored in Codespaces)
     // In Codespaces, GitHub automatically configures Git with your account
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/vscode/.gitconfig.host,type=bind,consistency=cached,readonly",
-    "source=${localEnv:HOME}/.config/gh,target=/home/vscode/.config/gh,type=bind,consistency=cached,readonly"
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/vscode/.gitconfig.host,type=bind,consistency=cached,readonly"
   ],
   "remoteUser": "vscode"
 }
