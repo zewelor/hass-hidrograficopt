@@ -4,8 +4,8 @@
   "description": "Development tools for Instituto Hidrográfico integration",
   "private": true,
   "devDependencies": {
-    "@github/copilot": "1.0.24",
-    "markdownlint-cli2": "0.22.0",
+    "@github/copilot": "1.0.36",
+    "markdownlint-cli2": "0.22.1",
     "prettier": "3.8.2",
     "pyright": "1.1.408"
   }
