@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# script/python-check: Check Python formatting and linting without making changes
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR/.."
+
+# shellcheck source=script/.lib/output.sh
+source "$SCRIPT_DIR/.lib/output.sh"
+
+activate_venv
+
+run_hook "python-check" "pre"
+
+log_header "Checking Python format (Ruff)"
+ruff format custom_components/ tests/ --check
+
+log_header "Checking Python linting (Ruff)"
+ruff check custom_components/ tests/
+
+"$SCRIPT_DIR/clean" --minimal
+
+run_hook "python-check" "post"
+log_success "Python check completed"

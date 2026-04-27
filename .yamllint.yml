@@ -1,0 +1,33 @@
+---
+# yamllint configuration for hidrograficopt
+# Documentation: https://yamllint.readthedocs.io/en/stable/rules.html
+
+extends: default
+
+ignore: |
+  config/
+  .local/
+  schemas/yaml/
+  .github/ISSUE_TEMPLATE/
+
+rules:
+  line-length:
+    max: 120
+    level: warning
+
+  document-start: disable
+
+  truthy:
+    allowed-values: ["true", "false"]
+    check-keys: false
+
+  comments:
+    min-spaces-from-content: 1
+
+  comments-indentation:
+    level: warning
+
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false

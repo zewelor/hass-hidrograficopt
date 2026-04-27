@@ -1,6 +1,7 @@
 #!/bin/bash
 # Output formatting library for consistent script styling
 # Source this file in your scripts with: source "$(dirname "$0")/../.lib/output.sh"
+# shellcheck disable=SC2034  # Symbols/colors are exported for sourcing scripts
 
 # Color codes
 readonly RED='\033[0;31m'
@@ -83,5 +84,37 @@ require_command() {
             log_info "Install with: $install_hint"
         fi
         exit 1
+    fi
+}
+
+# Activate the Home Assistant virtual environment if not already active.
+activate_venv() {
+    if [[ -n ${VIRTUAL_ENV:-} ]]; then
+        return 0
+    fi
+    log_header "Activating virtual environment"
+    # shellcheck source=/dev/null
+    if [[ -f "$PWD/.local/ha-venv/bin/activate" ]]; then
+        source "$PWD/.local/ha-venv/bin/activate"
+    elif [[ -f "$HOME/.local/ha-venv/bin/activate" ]]; then
+        source "$HOME/.local/ha-venv/bin/activate"
+    else
+        log_error "Virtual environment not found in $PWD/.local/ha-venv or $HOME/.local/ha-venv"
+        exit 1
+    fi
+}
+
+# Run a user-defined hook script if it exists.
+# Hooks live in script/hooks/<name>.<phase>.sh and are sourced so they can
+# customize the caller's environment.
+run_hook() {
+    local script_name="$1"
+    local phase="$2"
+    local hook_file="script/hooks/${script_name}.${phase}.sh"
+
+    if [[ -f "$hook_file" ]]; then
+        log_info "Running hook: ${hook_file}"
+        # shellcheck source=/dev/null
+        source "$hook_file"
     fi
 }

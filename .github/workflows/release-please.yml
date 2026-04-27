@@ -1,0 +1,30 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+
+# Required permissions for GITHUB_TOKEN to create releases and pull requests.
+#
+# Additionally, "Allow GitHub Actions to create and approve pull requests" must
+# be enabled in your repository under Settings > Actions > General. To have
+# CI run on Release Please PRs, add an optional RELEASE_PLEASE_TOKEN secret.
+# See: https://github.com/googleapis/release-please-action?tab=readme-ov-file#workflow-permissions
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    name: Release Please
+    if: github.repository != 'jpawlowski/hacs.integration_blueprint'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run release-please
+        uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4.4.1
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

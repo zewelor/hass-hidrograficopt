@@ -161,6 +161,17 @@
         "panel": "new"
       },
       "problemMatcher": []
+    },
+    {
+      "label": "Version Check",
+      "type": "shell",
+      "command": "./script/version --check",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
     }
   ]
 }

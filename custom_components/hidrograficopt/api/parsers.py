@@ -105,7 +105,7 @@ def parse_tide_events(payload: Any, timezone: Any) -> list[TideEvent]:
 
         try:
             height_m = round(float(height), 2)
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             continue
 
         events.append(

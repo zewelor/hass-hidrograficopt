@@ -112,7 +112,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     try:
         port_id = int(port_id_raw)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         LOGGER.error("Cannot migrate %s entry %s: missing valid port_id", DOMAIN, entry.entry_id)
         return False
 
