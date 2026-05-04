@@ -1,6 +1,15 @@
 #!/bin/bash
 
-# script/markdown-check: Check Markdown files for formatting and lint issues
+# script/markdown-check: Check Markdown files for formatting and lint issues without making changes
+#
+# Runs Prettier in check-only mode and markdownlint-cli2 without auto-fix.
+# No files are modified. Useful for CI/CD and targeted validation after Markdown changes.
+#
+# Usage:
+#   ./script/markdown-check
+#
+# Examples:
+#   ./script/markdown-check
 
 set -euo pipefail
 

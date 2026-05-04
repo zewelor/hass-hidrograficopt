@@ -19,7 +19,7 @@ If not provided, ask for:
 
 Create a new ADR in `docs/development/adr/NNNN-title-of-decision.md`:
 
-````markdown
+`````markdown
 # ADR-NNNN: [Title of Decision]
 
 **Status:** Proposed | Accepted | Deprecated | Superseded by ADR-XXXX
@@ -94,8 +94,8 @@ Create a new ADR in `docs/development/adr/NNNN-title-of-decision.md`:
 
 **Files affected:**
 
-- `custom_components/hidrograficopt/[file1.py]`
-- `custom_components/hidrograficopt/[file2.py]`
+- `custom_components/ha_integration_domain/[file1.py]`
+- `custom_components/ha_integration_domain/[file2.py]`
 
 **Code pattern to follow:**
 
@@ -103,8 +103,7 @@ Create a new ADR in `docs/development/adr/NNNN-title-of-decision.md`:
 # Example of key implementation detail
 ```
 
-```text
-
+```markdown
 **Testing approach:**
 
 - [How to verify this decision works]
@@ -133,7 +132,6 @@ Create a new ADR in `docs/development/adr/NNNN-title-of-decision.md`:
 - YYYY-MM-DD: Initial decision (Status: Accepted)
 - [Future updates go here]
 ```
-````
 
 ## Common ADR Topics for HA Integrations
 
@@ -192,7 +190,6 @@ Create a new ADR in `docs/development/adr/NNNN-title-of-decision.md`:
 
 4. **Reference in code:**
    - Add comment references in relevant files:
-
      ```python
      # Implementation follows ADR-0004: Coordinator Pattern
      ```
@@ -225,8 +222,8 @@ Create a new ADR in `docs/development/adr/NNNN-title-of-decision.md`:
 
 ## Integration Context
 
-- **Domain:** `hidrograficopt`
-- **Class prefix:** `InstitutoHidrogrfico`
+- **Domain:** `ha_integration_domain`
+- **Class prefix:** `IntegrationBlueprint`
 - **Architecture docs:** `docs/development/ARCHITECTURE.md`
 - **Decisions log:** `docs/development/DECISIONS.md`
 
@@ -241,6 +238,10 @@ After creating the ADR:
 3. Suggest relevant code locations for implementation
 4. Ask: "Should I proceed with implementing this decision?"
 
-```text
+````
 
 ```
+
+```
+````
+`````
