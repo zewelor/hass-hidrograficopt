@@ -28,7 +28,6 @@ jobs:
       contents: write
       pull-requests: write
       actions: write
-      workflows: write
 
     steps:
       - name: Checkout

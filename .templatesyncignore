@@ -61,6 +61,7 @@ docs/
 
 # ── This sync workflow ───────────────────────────────────────
 .github/workflows/template-sync.yml
+.github/workflows/dependabot-ha-stability-check.yml
 
 # ── Lockfiles ────────────────────────────────────────────────
 uv.lock
