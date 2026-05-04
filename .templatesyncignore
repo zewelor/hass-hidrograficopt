@@ -64,3 +64,4 @@ docs/
 
 # ── Lockfiles ────────────────────────────────────────────────
 uv.lock
+script/yaml-check
