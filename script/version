@@ -9,8 +9,8 @@
 #   ./script/version [--tag|--check]
 #
 # Examples:
-#   ./script/version          # Print: 1.0.0
-#   ./script/version --tag    # Print: v1.0.0
+#   ./script/version          # Print: 0.1.0
+#   ./script/version --tag    # Print: v0.1.0
 #   ./script/version --check  # Validate manifest.json matches release-please manifest
 
 set -euo pipefail
@@ -21,7 +21,7 @@ cd "$SCRIPT_DIR/.."
 # shellcheck source=script/.lib/output.sh
 source "$SCRIPT_DIR/.lib/output.sh"
 
-MANIFEST="custom_components/hidrograficopt/manifest.json"
+MANIFEST="custom_components/ha_integration_domain/manifest.json"
 RP_MANIFEST=".release-please-manifest.json"
 
 require_command jq "apt-get install jq"

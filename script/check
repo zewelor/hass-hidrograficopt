@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# script/check: Run all checks (type, lint, spell) -- recommended before committing
+# script/check: Run all checks (type, lint, spell) — recommended before committing
 #
 # Runs the full validation suite in sequence:
 #   type-check      Pyright type checking

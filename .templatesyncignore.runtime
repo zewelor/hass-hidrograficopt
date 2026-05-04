@@ -1,0 +1,66 @@
+# Template Sync Ignore File
+# ============================================================
+# Files and folders listed here will NOT be synced from the
+# upstream template (jpawlowski/hacs.integration_blueprint).
+#
+# Syntax follows .gitignore glob patterns.
+# See: https://github.com/AndreasAugustin/actions-template-sync
+# ============================================================
+
+# ── Your integration source code ─────────────────────────────
+custom_components/
+
+# ── Tests ────────────────────────────────────────────────────
+tests/
+
+# ── Project configuration ────────────────────────────────────
+pyproject.toml
+.yamllint.yml
+.pre-commit-config.yaml
+
+# ── Runtime dependencies ─────────────────────────────────────
+requirements.txt
+
+# ── VS Code workspace settings ───────────────────────────────
+.vscode/launch.json
+.vscode/tasks.json
+
+# ── User-specific project files ──────────────────────────────
+README.md
+README.template.md
+LICENSE
+initialize.sh
+hacs.json
+CONTRIBUTING.md
+DEPENDENCIES.md
+
+# ── AI agent instruction files ───────────────────────────────
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+.github/copilot-instructions.md
+
+# ── GitHub project settings ──────────────────────────────────
+.github/CODEOWNERS
+.github/FUNDING.yml
+.github/COPILOT_CODING_AGENT.md
+
+# ── Script and DevContainer hooks ────────────────────────────
+script/hooks/
+.devcontainer/hooks/
+
+# ── Release management ───────────────────────────────────────
+release-please-config.json
+.release-please-manifest.json
+
+# ── Local Home Assistant development config ──────────────────
+config/
+
+# ── Documentation ────────────────────────────────────────────
+docs/
+
+# ── This sync workflow ───────────────────────────────────────
+.github/workflows/template-sync.yml
+
+# ── Lockfiles ────────────────────────────────────────────────
+uv.lock

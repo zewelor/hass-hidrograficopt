@@ -1,7 +1,7 @@
 #!/bin/bash
 # Output formatting library for consistent script styling
 # Source this file in your scripts with: source "$(dirname "$0")/../.lib/output.sh"
-# shellcheck disable=SC2034  # Symbols/colors are exported for sourcing scripts
+# shellcheck disable=SC2034  # All variables in this library are used by sourcing scripts
 
 # Color codes
 readonly RED='\033[0;31m'
@@ -20,6 +20,7 @@ readonly CROSS='✗'
 readonly ARROW='→'
 readonly INFO='ℹ'
 readonly WARNING='⚠'
+# shellcheck disable=SC2034  # These symbols are available to sourcing scripts
 readonly ROCKET='🚀'
 readonly PACKAGE='📦'
 readonly WRENCH='🔧'
@@ -88,32 +89,43 @@ require_command() {
 }
 
 # Activate the Home Assistant virtual environment if not already active.
+# Silently skips when VIRTUAL_ENV is already set (e.g. in CI or nested calls).
 activate_venv() {
     if [[ -n ${VIRTUAL_ENV:-} ]]; then
         return 0
     fi
     log_header "Activating virtual environment"
     # shellcheck source=/dev/null
-    if [[ -f "$PWD/.local/ha-venv/bin/activate" ]]; then
+    if [[ -f "$HOME/ha-venv/bin/activate" ]]; then
+        source "$HOME/ha-venv/bin/activate"
+    elif [[ -f "$PWD/.local/ha-venv/bin/activate" ]]; then
         source "$PWD/.local/ha-venv/bin/activate"
     elif [[ -f "$HOME/.local/ha-venv/bin/activate" ]]; then
         source "$HOME/.local/ha-venv/bin/activate"
     else
-        log_error "Virtual environment not found in $PWD/.local/ha-venv or $HOME/.local/ha-venv"
+        log_error "Virtual environment not found. Run: script/setup/bootstrap"
         exit 1
     fi
 }
 
 # Run a user-defined hook script if it exists.
-# Hooks live in script/hooks/<name>.<phase>.sh and are sourced so they can
-# customize the caller's environment.
+# Hooks live in script/user/<name>.<phase>.sh and are sourced (not executed),
+# so they can read and set variables in the calling script's environment.
+#
+# Usage:  run_hook <script-name> <phase>
+# Phases: pre | post
+#
+# Example — in script/develop:
+#   run_hook "develop" "pre"
+#
+# The user creates script/user/develop.pre.sh to customize behavior.
+# SCRIPT_DIR must be set in the calling script before sourcing output.sh.
 run_hook() {
     local script_name="$1"
     local phase="$2"
     local hook_file="script/hooks/${script_name}.${phase}.sh"
-
     if [[ -f "$hook_file" ]]; then
-        log_info "Running hook: ${hook_file}"
+        log_info "Running hook: script/hooks/${script_name}.${phase}.sh"
         # shellcheck source=/dev/null
         source "$hook_file"
     fi

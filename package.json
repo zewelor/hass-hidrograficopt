@@ -1,11 +1,11 @@
 {
-  "name": "hidrograficopt-tools",
+  "name": "ha-integration-tools",
   "version": "1.0.0",
-  "description": "Development tools for Instituto Hidrográfico integration",
+  "description": "Development tools for the Home Assistant integration",
   "private": true,
   "devDependencies": {
-    "@github/copilot": "1.0.36",
-    "markdownlint-cli2": "0.22.1",
+    "@github/copilot": "1.0.24",
+    "markdownlint-cli2": "0.22.0",
     "prettier": "3.8.2",
     "pyright": "1.1.408"
   }
