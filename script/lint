@@ -1,12 +1,19 @@
 #!/bin/bash
 
-# script/lint: Run linting tools and apply formatting
+# script/lint: Format and lint all file types
 #
-# Runs Ruff format and Ruff check with auto-fix enabled. Automatically cleans up
-# any accidental package installations after running.
+# Orchestrates formatting and linting across all languages:
+# Python (Ruff), YAML (yamllint), Shell (shfmt + shellcheck), Markdown (Prettier + markdownlint-cli2),
+# Spelling (codespell). Applies auto-fixes where available.
 #
 # Usage:
 #   ./script/lint
+#
+# For targeted language-specific formatting:
+#   ./script/python      Python only    (Ruff format + fix)
+#   ./script/shell       Shell only     (shfmt)
+#   ./script/spell       Spelling       (codespell --write-changes)
+#   ./script/markdown    Markdown only  (Prettier + markdownlint-cli2 --fix)
 #
 # Examples:
 #   ./script/lint
@@ -34,4 +41,5 @@ echo ""
 "$SCRIPT_DIR/markdown"
 
 run_hook "lint" "post"
+
 log_success "Linting completed"
