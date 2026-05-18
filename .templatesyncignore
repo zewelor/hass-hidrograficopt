@@ -22,6 +22,7 @@ tests/
 # (initialize.sh replaces ha_integration_domain and related strings).
 # Syncing them back would revert those substitutions.
 pyproject.toml
+.markdownlint.json
 .yamllint.yml
 .pre-commit-config.yaml
 
