@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/zewelor/hass-hidrograficopt/compare/v1.0.2...v1.0.3) (2026-06-08)
+
+
+### Bug Fixes
+
+* **ci:** sync Home Assistant release train ([#96](https://github.com/zewelor/hass-hidrograficopt/issues/96)) ([c178207](https://github.com/zewelor/hass-hidrograficopt/commit/c178207cb4f1cd699fce351ef1adde989a75a374))
+
 ## [1.0.2](https://github.com/zewelor/hass-hidrograficopt/compare/v1.0.1...v1.0.2) (2026-05-04)
 
 ### Bug Fixes
