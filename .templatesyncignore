@@ -24,6 +24,7 @@ tests/
 pyproject.toml
 .yamllint.yml
 .pre-commit-config.yaml
+.markdownlint.json
 
 # ── Runtime dependencies ──────────────────────────────────────
 # requirements.txt lists your integration's PyPI dependencies (synced with
