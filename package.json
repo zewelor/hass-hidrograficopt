@@ -5,7 +5,7 @@
   "private": true,
   "devDependencies": {
     "@github/copilot": "1.0.60",
-    "markdownlint-cli2": "0.22.0",
+    "markdownlint-cli2": "0.22.1",
     "prettier": "3.8.3",
     "pyright": "1.1.410"
   }
