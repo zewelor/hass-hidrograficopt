@@ -65,6 +65,8 @@ Generate code that passes these checks on first run. As an AI agent, you should 
 5. **Validation:** run `script/check` before considering task complete
 6. **File size:** keep files at ~200-400 lines. Split large modules into smaller ones when needed.
 
+**Template sync PRs:** review before merge. Check repo-owned tooling such as `.markdownlint.json`, `.pre-commit-config.yaml`, `pyproject.toml`, workflows, and lockfiles. Keep `.markdownlint.json` ignored from template sync because Release Please changelogs can repeat headings like `Bug Fixes`; if the template changes an ignored file, manually port only the intentional local change.
+
 **Important: Do NOT write tests unless explicitly requested.** Focus on implementing functionality. The developer decides when and if tests are needed.
 
 **Translation strategy:**

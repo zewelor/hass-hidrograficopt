@@ -88,6 +88,14 @@ If a developer requests something that contradicts these instructions:
 - Instructions become outdated or contradict actual code
 - New patterns emerge that should be standardized
 
+### Template Sync Reviews
+
+Treat template-sync pull requests as review PRs, not automatic merge candidates. Check the diff for repo-specific tooling before merging, especially `.markdownlint.json`, `.pre-commit-config.yaml`, `pyproject.toml`, workflows, and lockfiles.
+
+Keep `.markdownlint.json` in `.templatesyncignore`. It contains repo-specific markdownlint settings, including `MD024.siblings_only`, because Release Please changelogs can legitimately repeat section headings such as `Bug Fixes` across different versions.
+
+When the template brings a useful change to a file listed in `.templatesyncignore`, manually port only the intentional change into the local file instead of allowing template-sync to overwrite the whole repo-owned file.
+
 ### Documentation vs. Instructions
 
 **Three types of content with clear separation:**
