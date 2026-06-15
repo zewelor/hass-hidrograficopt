@@ -35,8 +35,11 @@ pyproject.toml
 # ── Runtime dependencies ──────────────────────────────────────
 # requirements.txt lists your integration's PyPI dependencies (synced with
 # manifest.json → requirements). This is user-owned content; requirements_dev.txt
-# and requirements_test.txt are blueprint-managed tooling and do get synced.
+# is blueprint-managed tooling and does get synced.
+# requirements_test.txt is pinned to the Home Assistant release train this
+# integration supports and is maintained locally.
 requirements.txt
+requirements_test.txt
 
 # ── VS Code workspace settings ───────────────────────────────
 # launch.json and tasks.json reference your integration domain
@@ -74,6 +77,11 @@ GEMINI.md
 # Your custom pre/post hooks live here — never overwritten by template sync
 script/hooks/
 .devcontainer/hooks/
+
+# ── Bootstrap script ─────────────────────────────────────────
+# script/setup/bootstrap carries local fixes for venv recreation that must
+# not be reverted by upstream template sync.
+script/setup/bootstrap
 
 # ── DevContainer environment overrides ───────────────────────
 # .env contains your project's HA_VERSION pin and other settings.

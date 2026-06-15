@@ -56,6 +56,7 @@ if ! command -v uv >/dev/null 2>&1; then
     log_info "UV not found, installing..."
     pipx install uv
 fi
+UV_BIN="$(command -v uv)"
 
 log_header "Checking for Python virtual environment"
 
@@ -174,24 +175,6 @@ EOF
     set -e
 fi
 
-log_header "Installing development dependencies"
-uv pip install --requirement requirements_dev.txt
-
-log_header "Installing test dependencies"
-uv pip install --requirement requirements_test.txt
-
-log_header "Installing runtime dependencies"
-if [[ -s requirements.txt ]] && grep -qv '^#' requirements.txt | grep -q '[^[:space:]]'; then
-    uv pip install --requirement requirements.txt
-else
-    log_info "No runtime dependencies defined (this is normal for blueprints)"
-fi
-
-if [[ -f requirements.local.txt ]]; then
-    log_header "Installing local extra dependencies (requirements.local.txt)"
-    uv pip install --requirement requirements.local.txt
-fi
-
 if [[ -n "${HA_VERSION:-}" ]]; then
     # Explicit HA_VERSION from environment — use exactly as specified
     resolve_ha_version HA_VERSION "$HA_VERSION"
@@ -223,10 +206,28 @@ if [[ -f "$HA_VERSION_MARKER" ]]; then
         # Use find instead of rm -rf: the path may be a named Docker volume mount point
         # which cannot be removed itself — only its contents can be deleted.
         find "$VENV_PATH" -mindepth 1 -delete
-        uv venv "$VENV_PATH"
+        "$UV_BIN" venv "$VENV_PATH"
         # shellcheck source=/dev/null
         source "$VENV_PATH/bin/activate"
     fi
+fi
+
+log_header "Installing development dependencies"
+uv pip install --requirement requirements_dev.txt
+
+log_header "Installing test dependencies"
+uv pip install --requirement requirements_test.txt
+
+log_header "Installing runtime dependencies"
+if [[ -s requirements.txt ]] && grep -qv '^#' requirements.txt | grep -q '[^[:space:]]'; then
+    uv pip install --requirement requirements.txt
+else
+    log_info "No runtime dependencies defined (this is normal for blueprints)"
+fi
+
+if [[ -f requirements.local.txt ]]; then
+    log_header "Installing local extra dependencies (requirements.local.txt)"
+    uv pip install --requirement requirements.local.txt
 fi
 
 log_header "Installing Home Assistant ${HA_VERSION} runtime dependencies"
