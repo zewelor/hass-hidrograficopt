@@ -9,23 +9,14 @@ updates:
     commit-message:
       prefix: "chore(deps)"
 
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    commit-message:
-      prefix: "chore(deps)"
-    # Let new action versions settle for 7 days before opening a PR (same as HA Core)
-    cooldown:
-      default-days: 7
-    groups:
-      # Bundle all minor/patch action updates into a single PR; major updates stay separate
-      github-actions:
-        applies-to: version-updates
-        update-types:
-          - minor
-          - patch
+  # GitHub Actions versions are managed by the upstream integration blueprint template.
+  # Keeping Dependabot enabled here would create PRs that diverge from the template
+  # and need to be manually reconciled on every template sync.
+  # - package-ecosystem: "github-actions"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "weekly"
+  #     day: "monday"
 
   - package-ecosystem: "pip"
     directory: "/"
