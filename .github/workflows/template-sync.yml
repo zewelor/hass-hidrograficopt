@@ -44,6 +44,15 @@ jobs:
         run: |
           cp .templatesyncignore .templatesyncignore.runtime
 
+          # Append local custom overrides to ensure they are not reverted by template updates
+          {
+            echo ""
+            echo "# Custom local overrides"
+            echo "requirements_test.txt"
+            echo "script/setup/bootstrap"
+            echo ".github/dependabot.yml"
+          } >> .templatesyncignore.runtime
+
           if [[ -z "${TEMPLATE_SYNC_TARGET_PAT:-}" ]]; then
             {
               echo ".github/workflows/*.yml"
