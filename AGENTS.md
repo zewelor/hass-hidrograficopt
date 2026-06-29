@@ -90,11 +90,19 @@ If a developer requests something that contradicts these instructions:
 
 ### Template Sync Reviews
 
-Treat template-sync pull requests as review PRs, not automatic merge candidates. Check the diff for repo-specific tooling before merging, especially `.markdownlint.json`, `.pre-commit-config.yaml`, `pyproject.toml`, workflows, and lockfiles.
+Template sync is manual-only. `.github/workflows/template-sync.yml` must keep `workflow_dispatch` and must not regain a `schedule` trigger. Treat template-sync pull requests as review PRs, not automatic merge candidates.
+
+Manual sync procedure:
+
+1. Start from a clean branch off `origin/main`.
+2. Run the template-sync workflow manually or compare against `jpawlowski/hacs.integration_blueprint`.
+3. Review the full diff before merging or porting anything. Pay special attention to `.templatesyncignore`, `.markdownlint.json`, `.pre-commit-config.yaml`, `pyproject.toml`, `requirements_test.txt`, `script/setup/bootstrap`, workflows, lockfiles, and `.github/dependabot.yml`.
+4. Reject template changes that remove repo-owned ignore entries, reintroduce Dependabot, downgrade the Home Assistant release train, or overwrite local bootstrap behavior.
+5. For files listed in `.templatesyncignore`, manually port only intentional upstream changes into the local file.
+6. Run `script/ha-version-sync` and `script/check` before opening or merging the PR.
+7. Use the protected-main flow: branch → PR → checks → merge. Never push directly to `main`.
 
 Keep `.markdownlint.json` in `.templatesyncignore`. It contains repo-specific markdownlint settings, including `MD024.siblings_only`, because Release Please changelogs can legitimately repeat section headings such as `Bug Fixes` across different versions.
-
-When the template brings a useful change to a file listed in `.templatesyncignore`, manually port only the intentional change into the local file instead of allowing template-sync to overwrite the whole repo-owned file.
 
 ### Documentation vs. Instructions
 
