@@ -46,7 +46,6 @@ class InstitutoHidrogrficoApiClient:
         self,
         *,
         port_id: int,
-        timezone: Any,
         period_days: int = DEFAULT_PERIOD_DAYS,
     ) -> list[TideEvent]:
         """Return parsed tide events for a station."""
@@ -57,7 +56,7 @@ class InstitutoHidrogrficoApiClient:
                 "period": period_days,
             },
         )
-        return parse_tide_events(payload, timezone)
+        return parse_tide_events(payload)
 
     async def _api_get_json(
         self,

@@ -11,11 +11,10 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
 from homeassistant.loader import async_get_loaded_integration
 
-from .api import InstitutoHidrogrficoApiClient, normalize_timezone_name
+from .api import InstitutoHidrogrficoApiClient
 from .const import (
     CONF_PORT_ID,
     CONF_STATION_NAME,
-    CONF_STATION_TIMEZONE,
     CONF_UPDATE_INTERVAL_MINUTES,
     DEFAULT_UPDATE_INTERVAL_MINUTES,
     DOMAIN,
@@ -31,7 +30,7 @@ if TYPE_CHECKING:
     from .data import InstitutoHidrogrficoConfigEntry
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
-CURRENT_CONFIG_VERSION = 3
+CURRENT_CONFIG_VERSION = 4
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -117,20 +116,18 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         return False
 
     migrated_station_name = str(data.get(CONF_STATION_NAME) or entry.title or f"Port {port_id}")
-    migrated_station_timezone = normalize_timezone_name(
-        str(data.get(CONF_STATION_TIMEZONE)) if data.get(CONF_STATION_TIMEZONE) else None
-    )
-    if migrated_station_timezone is None:
-        migrated_station_timezone = normalize_timezone_name(hass.config.time_zone) or "UTC"
-
     data[CONF_PORT_ID] = port_id
     data[CONF_STATION_NAME] = migrated_station_name
-    data[CONF_STATION_TIMEZONE] = migrated_station_timezone
+    data.pop("station_timezone", None)
+
+    options = dict(entry.options)
+    options.pop("timezone_override", None)
 
     hass.config_entries.async_update_entry(
         entry,
         version=CURRENT_CONFIG_VERSION,
         data=data,
+        options=options,
     )
     LOGGER.info("Migrated %s entry %s to version %s", DOMAIN, entry.entry_id, CURRENT_CONFIG_VERSION)
     return True

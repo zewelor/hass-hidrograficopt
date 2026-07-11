@@ -56,10 +56,7 @@ async def async_get_config_entry_diagnostics(
         "station": {
             "port_id": data.get("port_id"),
             "station_name": data.get("station_name"),
-            "station_timezone": entry.data.get("station_timezone"),
-            "timezone_override": entry.options.get("timezone_override"),
-            "effective_timezone": data.get("effective_timezone"),
-            "timezone_source": data.get("timezone_source"),
+            "source_timezone": data.get("source_timezone"),
             "events_count": len(events),
             "next_high": (
                 {

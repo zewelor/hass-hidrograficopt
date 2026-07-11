@@ -112,8 +112,7 @@ class InstitutoHidrogrficoTideSensor(SensorEntity, InstitutoHidrogrficoEntity):
         return {
             "port_id": self.coordinator.data.get("port_id"),
             "station_name": self.coordinator.data.get("station_name"),
-            "effective_timezone": self.coordinator.data.get("effective_timezone"),
-            "timezone_source": self.coordinator.data.get("timezone_source"),
+            "source_timezone": self.coordinator.data.get("source_timezone"),
             "tides": serialized_events,
             "events_count": len(serialized_events),
         }

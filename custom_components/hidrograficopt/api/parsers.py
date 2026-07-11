@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from .models import TideEvent, TideStation, TideType
@@ -61,8 +61,8 @@ def parse_stations(payload: Any) -> list[TideStation]:
     return sorted(stations, key=lambda station: (station.name.casefold(), station.port_id))
 
 
-def parse_tide_events(payload: Any, timezone: Any) -> list[TideEvent]:
-    """Parse /tidestation payload into sorted tide events."""
+def parse_tide_events(payload: Any) -> list[TideEvent]:
+    """Parse /tidestation Fuso 0 timestamps into sorted UTC tide events."""
     if not isinstance(payload, list):
         return []
 
@@ -98,10 +98,15 @@ def parse_tide_events(payload: Any, timezone: Any) -> list[TideEvent]:
                 continue
 
         if parsed_datetime is None:
-            continue
+            try:
+                parsed_datetime = datetime.fromisoformat(date_string)
+            except ValueError:
+                continue
 
         if parsed_datetime.tzinfo is None:
-            parsed_datetime = parsed_datetime.replace(tzinfo=timezone)
+            parsed_datetime = parsed_datetime.replace(tzinfo=UTC)
+        else:
+            parsed_datetime = parsed_datetime.astimezone(UTC)
 
         try:
             height_m = round(float(height), 2)
