@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/zewelor/hass-hidrograficopt/compare/v1.0.3...v1.0.4) (2026-07-11)
+
+
+### Bug Fixes
+
+* interpret HMAPI tide times as UTC ([#107](https://github.com/zewelor/hass-hidrograficopt/issues/107)) ([1e97ac4](https://github.com/zewelor/hass-hidrograficopt/commit/1e97ac4a3490ccf8059859ef232dfce42959bf03))
+
 ## [1.0.3](https://github.com/zewelor/hass-hidrograficopt/compare/v1.0.2...v1.0.3) (2026-06-08)
 
 ### Bug Fixes
