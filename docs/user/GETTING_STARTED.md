@@ -19,8 +19,7 @@
 1. Settings -> Devices & Services -> Add Integration
 2. Search for "Instituto Hidrográfico Integration"
 3. Pick tide station (or enter `port_id`)
-4. (Optional) Set timezone override in integration options if you need a manual timezone
-5. Finish setup
+4. Finish setup
 
 ## Created entities
 
@@ -29,3 +28,6 @@
 - `sensor.*_next_low_tide_time`
 - `sensor.*_next_low_tide_height`
 - `sensor.*_tide_status`
+
+Tide timestamps originate in UTC. Home Assistant displays them in the
+timezone selected in your frontend or user profile.

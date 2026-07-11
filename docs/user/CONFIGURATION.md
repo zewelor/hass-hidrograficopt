@@ -11,10 +11,12 @@
 - `update_interval_minutes`
   - Default: `60`
   - Range: `5` to `360`
-- `timezone_override` (optional)
-  - IANA timezone string, for example: `Atlantic/Madeira`
-  - If empty, integration uses station timezone auto-detected from station coordinates
-  - Use this only if you need to force a specific timezone
+
+## Tide times
+
+HMAPI publishes tide predictions in Fuso 0 (UTC). Home Assistant stores the
+timestamp in UTC and renders it using the timezone selected in the frontend or
+user profile. Raw values shown in Developer Tools therefore remain in UTC.
 
 ## Service
 

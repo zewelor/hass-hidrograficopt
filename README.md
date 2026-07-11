@@ -38,8 +38,16 @@ Custom Home Assistant integration for Portuguese tide data from Instituto Hidrog
 ## Options
 
 - Update interval in minutes (default: 60)
-- Optional timezone override (IANA format, e.g. `Atlantic/Madeira`)
-- By default, timezone uses your Home Assistant configured timezone
+
+## Time handling
+
+HMAPI tide predictions are published in Fuso 0 (UTC), without an explicit
+offset in the response. The integration interprets these timestamps as UTC and
+returns timezone-aware timestamp sensors. Home Assistant converts them to the
+timezone selected by the frontend or user profile.
+
+For example, an HMAPI prediction of `2026-07-12 18:18:00` is `18:18 UTC` and
+is displayed as `19:18` in Madeira during WEST (UTC+1).
 
 ## Service
 

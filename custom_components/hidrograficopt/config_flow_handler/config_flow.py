@@ -8,11 +8,10 @@ from custom_components.hidrograficopt.api import (
     InstitutoHidrogrficoApiClient,
     InstitutoHidrogrficoApiClientCommunicationError,
     InstitutoHidrogrficoApiClientDataError,
-    normalize_timezone_name,
 )
 from custom_components.hidrograficopt.config_flow_handler.schemas import get_user_schema
 from custom_components.hidrograficopt.config_flow_handler.validators import validate_port_id
-from custom_components.hidrograficopt.const import CONF_PORT_ID, CONF_STATION_NAME, CONF_STATION_TIMEZONE, DOMAIN
+from custom_components.hidrograficopt.const import CONF_PORT_ID, CONF_STATION_NAME, DOMAIN
 from homeassistant import config_entries
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
@@ -25,7 +24,7 @@ if TYPE_CHECKING:
 class InstitutoHidrogrficoConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for hidrograficopt."""
 
-    VERSION = 3
+    VERSION = 4
 
     def __init__(self) -> None:
         """Initialize config flow handler."""
@@ -74,7 +73,6 @@ class InstitutoHidrogrficoConfigFlowHandler(config_entries.ConfigFlow, domain=DO
             else:
                 station = self._resolve_station(port_id)
                 station_name = station.name if station else f"Port {port_id}"
-                station_timezone = self._resolve_default_timezone()
                 await self.async_set_unique_id(str(port_id))
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
@@ -82,7 +80,6 @@ class InstitutoHidrogrficoConfigFlowHandler(config_entries.ConfigFlow, domain=DO
                     data={
                         CONF_PORT_ID: port_id,
                         CONF_STATION_NAME: station_name,
-                        CONF_STATION_TIMEZONE: station_timezone,
                     },
                 )
 
@@ -134,7 +131,6 @@ class InstitutoHidrogrficoConfigFlowHandler(config_entries.ConfigFlow, domain=DO
                 if not errors:
                     station = self._resolve_station(port_id)
                     station_name = station.name if station else f"Port {port_id}"
-                    station_timezone = self._resolve_default_timezone()
                     self.hass.config_entries.async_update_entry(
                         entry,
                         title=station_name,
@@ -142,7 +138,6 @@ class InstitutoHidrogrficoConfigFlowHandler(config_entries.ConfigFlow, domain=DO
                         data={
                             CONF_PORT_ID: port_id,
                             CONF_STATION_NAME: station_name,
-                            CONF_STATION_TIMEZONE: station_timezone,
                         },
                     )
                     await self.hass.config_entries.async_reload(entry.entry_id)
@@ -181,8 +176,3 @@ class InstitutoHidrogrficoConfigFlowHandler(config_entries.ConfigFlow, domain=DO
             if station.port_id == port_id:
                 return station
         return None
-
-    def _resolve_default_timezone(self) -> str:
-        """Resolve default timezone for new entries."""
-        hass_timezone = normalize_timezone_name(self.hass.config.time_zone)
-        return hass_timezone or "UTC"

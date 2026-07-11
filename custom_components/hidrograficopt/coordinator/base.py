@@ -4,20 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from custom_components.hidrograficopt.api import (
-    InstitutoHidrogrficoApiClientError,
-    TideDirection,
-    TideEvent,
-    TideType,
-    normalize_timezone_name,
-)
-from custom_components.hidrograficopt.const import (
-    CONF_PORT_ID,
-    CONF_STATION_NAME,
-    CONF_STATION_TIMEZONE,
-    CONF_TIMEZONE_OVERRIDE,
-    DEFAULT_PERIOD_DAYS,
-)
+from custom_components.hidrograficopt.api import InstitutoHidrogrficoApiClientError, TideDirection, TideEvent, TideType
+from custom_components.hidrograficopt.const import CONF_PORT_ID, CONF_STATION_NAME, DEFAULT_PERIOD_DAYS
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
@@ -35,16 +23,10 @@ class InstitutoHidrogrficoDataUpdateCoordinator(DataUpdateCoordinator[dict[str, 
         try:
             port_id = int(self.config_entry.data[CONF_PORT_ID])
             station_name = str(self.config_entry.data[CONF_STATION_NAME])
-            timezone_name, timezone_source = self._resolve_effective_timezone()
-            timezone = dt_util.get_time_zone(timezone_name)
-            if timezone is None:
-                msg = f"Invalid timezone resolved for station {port_id}: {timezone_name}"
-                raise UpdateFailed(msg)
             now = dt_util.now()
 
             events = await self.config_entry.runtime_data.client.async_get_tide_events(
                 port_id=port_id,
-                timezone=timezone,
                 period_days=DEFAULT_PERIOD_DAYS,
             )
 
@@ -61,8 +43,7 @@ class InstitutoHidrogrficoDataUpdateCoordinator(DataUpdateCoordinator[dict[str, 
                 "next_low": next_low,
                 "tide_status": tide_status,
                 "last_update": now,
-                "effective_timezone": timezone_name,
-                "timezone_source": timezone_source,
+                "source_timezone": "UTC",
             }
         except (KeyError, TypeError, ValueError) as exception:
             msg = f"Invalid config entry data: {exception}"
@@ -70,23 +51,6 @@ class InstitutoHidrogrficoDataUpdateCoordinator(DataUpdateCoordinator[dict[str, 
         except InstitutoHidrogrficoApiClientError as exception:
             raise UpdateFailed(str(exception)) from exception
         return data
-
-    def _resolve_effective_timezone(self) -> tuple[str, str]:
-        """Resolve timezone in precedence order and return (name, source)."""
-        option_timezone = normalize_timezone_name(self.config_entry.options.get(CONF_TIMEZONE_OVERRIDE))
-        if option_timezone:
-            return option_timezone, "override"
-
-        station_timezone = normalize_timezone_name(str(self.config_entry.data[CONF_STATION_TIMEZONE]))
-        if station_timezone is not None:
-            return station_timezone, "station"
-
-        hass_timezone = normalize_timezone_name(self.hass.config.time_zone)
-        if hass_timezone:
-            return hass_timezone, "ha_fallback"
-
-        msg = "No valid timezone available in options, config entry, or Home Assistant settings"
-        raise UpdateFailed(msg)
 
 
 def _find_next_tide(events: list[TideEvent], tide_type: TideType) -> TideEvent | None:

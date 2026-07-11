@@ -7,7 +7,6 @@ from .client import (
     InstitutoHidrogrficoApiClientError,
 )
 from .models import TideDirection, TideEvent, TideStation, TideType
-from .timezone import normalize_timezone_name
 
 __all__ = [
     "InstitutoHidrogrficoApiClient",
@@ -18,5 +17,4 @@ __all__ = [
     "TideEvent",
     "TideStation",
     "TideType",
-    "normalize_timezone_name",
 ]
