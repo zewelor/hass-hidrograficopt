@@ -28,6 +28,12 @@ permissions:
 
 jobs:
   copilot-setup-steps:
+    if: >-
+      github.event_name != 'pull_request' ||
+      !(github.event.pull_request.head.repo.full_name == github.repository &&
+        github.event.pull_request.user.login == 'dependabot[bot]' &&
+        github.triggering_actor == 'dependabot[bot]' &&
+        startsWith(github.head_ref, 'dependabot/'))
     runs-on: ubuntu-latest
 
     steps:
